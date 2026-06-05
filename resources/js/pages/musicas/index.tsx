@@ -1,4 +1,11 @@
 import AppLayout from '@/components/app-layout';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Link } from '@inertiajs/react';
 import { Filter, Music2, Search, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -28,8 +35,8 @@ export default function Index({ musicas, temas, autores }) {
 
         // Filtro por tema
         if (temaSelecionado) {
-            resultado = resultado.filter(
-                (musica) => musica.tema_id === parseInt(temaSelecionado),
+            resultado = resultado.filter((musica) =>
+                musica.temas?.some((t) => t.id === parseInt(temaSelecionado)),
             );
         }
 
@@ -266,30 +273,24 @@ export default function Index({ musicas, temas, autores }) {
                                 <label className="mb-2 block text-sm font-semibold text-gray-700">
                                     Tema Litúrgico
                                 </label>
-                                <select
-                                    value={temaSelecionado}
-                                    onChange={(e) =>
-                                        setTemaSelecionado(e.target.value)
+                                <Select
+                                    value={temaSelecionado || '__all__'}
+                                    onValueChange={(v) =>
+                                        setTemaSelecionado(v === '__all__' ? '' : v)
                                     }
-                                    className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors"
-                                    style={{ borderColor: '#d1d5db' }}
-                                    onFocus={(e) => {
-                                        e.currentTarget.style.borderColor = '#C7AB65';
-                                        e.currentTarget.style.outline = '2px solid #C7AB65';
-                                        e.currentTarget.style.outlineOffset = '2px';
-                                    }}
-                                    onBlur={(e) => {
-                                        e.currentTarget.style.borderColor = '#d1d5db';
-                                        e.currentTarget.style.outline = 'none';
-                                    }}
                                 >
-                                    <option value="">Todos os temas</option>
-                                    {temas.map((tema) => (
-                                        <option key={tema.id} value={tema.id}>
-                                            {tema.nome}
-                                        </option>
-                                    ))}
-                                </select>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Todos os temas" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="__all__">Todos os temas</SelectItem>
+                                        {temas.map((tema) => (
+                                            <SelectItem key={tema.id} value={String(tema.id)}>
+                                                {tema.nome}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             {/* Filtro por Autor */}
@@ -297,30 +298,24 @@ export default function Index({ musicas, temas, autores }) {
                                 <label className="mb-2 block text-sm font-semibold text-gray-700">
                                     Autor/Compositor
                                 </label>
-                                <select
-                                    value={autorSelecionado}
-                                    onChange={(e) =>
-                                        setAutorSelecionado(e.target.value)
+                                <Select
+                                    value={autorSelecionado || '__all__'}
+                                    onValueChange={(v) =>
+                                        setAutorSelecionado(v === '__all__' ? '' : v)
                                     }
-                                    className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors"
-                                    style={{ borderColor: '#d1d5db' }}
-                                    onFocus={(e) => {
-                                        e.currentTarget.style.borderColor = '#C7AB65';
-                                        e.currentTarget.style.outline = '2px solid #C7AB65';
-                                        e.currentTarget.style.outlineOffset = '2px';
-                                    }}
-                                    onBlur={(e) => {
-                                        e.currentTarget.style.borderColor = '#d1d5db';
-                                        e.currentTarget.style.outline = 'none';
-                                    }}
                                 >
-                                    <option value="">Todos os autores</option>
-                                    {autores.map((autor, index) => (
-                                        <option key={index} value={autor}>
-                                            {autor}
-                                        </option>
-                                    ))}
-                                </select>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Todos os autores" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="__all__">Todos os autores</SelectItem>
+                                        {autores.map((autor, index) => (
+                                            <SelectItem key={index} value={autor}>
+                                                {autor}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             {/* Ordenação */}
@@ -328,36 +323,20 @@ export default function Index({ musicas, temas, autores }) {
                                 <label className="mb-2 block text-sm font-semibold text-gray-700">
                                     Ordenar por
                                 </label>
-                                <select
+                                <Select
                                     value={ordenacao}
-                                    onChange={(e) =>
-                                        setOrdenacao(e.target.value)
-                                    }
-                                    className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors"
-                                    style={{ borderColor: '#d1d5db' }}
-                                    onFocus={(e) => {
-                                        e.currentTarget.style.borderColor = '#C7AB65';
-                                        e.currentTarget.style.outline = '2px solid #C7AB65';
-                                        e.currentTarget.style.outlineOffset = '2px';
-                                    }}
-                                    onBlur={(e) => {
-                                        e.currentTarget.style.borderColor = '#d1d5db';
-                                        e.currentTarget.style.outline = 'none';
-                                    }}
+                                    onValueChange={setOrdenacao}
                                 >
-                                    <option value="numero">
-                                        Número Crescente
-                                    </option>
-                                    <option value="numero_desc">
-                                        Número Decrescente
-                                    </option>
-                                    <option value="titulo">
-                                        Título (A-Z)
-                                    </option>
-                                    <option value="titulo_desc">
-                                        Título (Z-A)
-                                    </option>
-                                </select>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="numero">Número Crescente</SelectItem>
+                                        <SelectItem value="numero_desc">Número Decrescente</SelectItem>
+                                        <SelectItem value="titulo">Título (A-Z)</SelectItem>
+                                        <SelectItem value="titulo_desc">Título (Z-A)</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
 

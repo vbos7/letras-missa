@@ -20,14 +20,40 @@ class ListaController extends Controller
             ->latest()
             ->get();
 
+        $temas = Tema::with(['musicas' => function ($query) {
+            $query->where('ativo', true)->orderBy('numero');
+        }])->orderBy('ordem')->get();
+
         return Inertia::render('listas/index', [
             'listas' => $listas,
+            'temas' => $temas,
         ]);
     }
 
     public function create()
     {
         return Inertia::render('listas/create');
+    }
+
+    public function storeGuiada(Request $request)
+    {
+        $validated = $request->validate([
+            'nome' => 'required|string|max:255',
+            'musicas' => 'array',
+            'musicas.*' => 'exists:musicas,id',
+        ]);
+
+        $lista = auth()->user()->listas()->create([
+            'nome' => $validated['nome'],
+            'publica' => true,
+        ]);
+
+        foreach (array_values($validated['musicas'] ?? []) as $index => $musicaId) {
+            $lista->musicas()->attach($musicaId, ['ordem' => $index + 1]);
+        }
+
+        return redirect()->route('listas.edit', $lista)
+            ->with('success', 'Lista criada com sucesso!');
     }
 
     public function store(Request $request)

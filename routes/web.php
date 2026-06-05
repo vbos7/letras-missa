@@ -122,6 +122,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [ListaController::class, 'index'])->name('index');
         Route::get('/create', [ListaController::class, 'create'])->name('create');
         Route::post('/', [ListaController::class, 'store'])->name('store');
+        Route::post('/guiada', [ListaController::class, 'storeGuiada'])->name('storeGuiada');
         Route::get('/{lista}/edit', [ListaController::class, 'edit'])->name('edit');
         Route::put('/{lista}', [ListaController::class, 'update'])->name('update');
         Route::delete('/{lista}', [ListaController::class, 'destroy'])->name('destroy');

@@ -1,11 +1,48 @@
 import AppLayout from '@/components/app-layout';
 import LetraFormatada from '@/components/letra-formatada';
 import { Link, router, usePage } from '@inertiajs/react';
-import { ArrowLeft, Check, ListPlus, Music2, Tag, User, X } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowLeft, Check, ListPlus, Music2, Pause, Play, Tag, User, Volume2, VolumeX, X } from 'lucide-react';
+import { useRef, useState } from 'react';
 
-export default function Show({ musica, listas }) {
+function formatarTempo(s: number) {
+    if (!isFinite(s)) return '0:00';
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${sec.toString().padStart(2, '0')}`;
+}
+
+export default function Show({ musica, listas, audioUrl }) {
     const { auth } = usePage().props;
+
+    // Player de áudio
+    const audioRef = useRef<HTMLAudioElement>(null);
+    const [playerAberto, setPlayerAberto] = useState(false);
+    const [tocando, setTocando] = useState(false);
+    const [tempoAtual, setTempoAtual] = useState(0);
+    const [duracao, setDuracao] = useState(0);
+    const [volume, setVolume] = useState(1);
+
+    const togglePlay = () => {
+        if (!audioRef.current) return;
+        if (!playerAberto) setPlayerAberto(true);
+        tocando ? audioRef.current.pause() : audioRef.current.play();
+    };
+
+    const fecharPlayer = () => {
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+        }
+        setPlayerAberto(false);
+        setTocando(false);
+        setTempoAtual(0);
+    };
+
+    const handleVolume = (v: number) => {
+        setVolume(v);
+        if (audioRef.current) audioRef.current.volume = v;
+    };
+
     const [modalAberto, setModalAberto] = useState(false);
     const [listaSelecionada, setListaSelecionada] = useState<number[]>([]);
     const [toast, setToast] = useState<{
@@ -107,10 +144,26 @@ export default function Show({ musica, listas }) {
                             <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl font-bold backdrop-blur-sm">
                                 {musica.numero}
                             </div>
-                            <div className="flex-1">
-                                <h1 className="mb-2 text-2xl font-bold md:text-3xl">
-                                    {musica.titulo}
-                                </h1>
+                            <div className="flex-1 min-w-0">
+                                {/* Título + botão play */}
+                                <div className="mb-2 flex items-start justify-between gap-3">
+                                    <h1 className="text-2xl font-bold md:text-3xl">
+                                        {musica.titulo}
+                                    </h1>
+                                    {audioUrl && (
+                                        <button
+                                            onClick={togglePlay}
+                                            title={tocando ? 'Pausar' : 'Tocar'}
+                                            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm transition-all hover:bg-white/35 active:scale-95"
+                                        >
+                                            {tocando
+                                                ? <Pause className="h-5 w-5" />
+                                                : <Play className="ml-0.5 h-5 w-5" />}
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Metadados */}
                                 <div className="flex flex-wrap gap-3 text-sm">
                                     {musica.autor && (
                                         <div className="flex items-center gap-1">
@@ -131,8 +184,93 @@ export default function Show({ musica, listas }) {
                                         </div>
                                     )}
                                 </div>
+
+                                {/* Barra do player */}
+                                <div
+                                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                                        playerAberto ? 'mt-3 max-h-16 opacity-100' : 'max-h-0 opacity-0'
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-2 rounded-xl bg-white/20 px-3 py-2 backdrop-blur-sm">
+                                        {/* Play/Pause */}
+                                        <button
+                                            onClick={togglePlay}
+                                            className="flex-shrink-0 transition-opacity hover:opacity-80"
+                                        >
+                                            {tocando
+                                                ? <Pause className="h-4 w-4" />
+                                                : <Play className="ml-px h-4 w-4" />}
+                                        </button>
+
+                                        {/* Tempo atual */}
+                                        <span className="w-8 flex-shrink-0 text-right text-xs tabular-nums opacity-80">
+                                            {formatarTempo(tempoAtual)}
+                                        </span>
+
+                                        {/* Scrubber */}
+                                        <input
+                                            type="range"
+                                            min={0}
+                                            max={duracao || 100}
+                                            value={tempoAtual}
+                                            onChange={(e) => {
+                                                const t = Number(e.target.value);
+                                                setTempoAtual(t);
+                                                if (audioRef.current) audioRef.current.currentTime = t;
+                                            }}
+                                            className="h-1 flex-1 cursor-pointer appearance-none rounded-full bg-white/40"
+                                            style={{ accentColor: 'white' }}
+                                        />
+
+                                        {/* Duração */}
+                                        <span className="w-8 flex-shrink-0 text-xs tabular-nums opacity-80">
+                                            {formatarTempo(duracao)}
+                                        </span>
+
+                                        {/* Volume */}
+                                        <button
+                                            onClick={() => handleVolume(volume > 0 ? 0 : 1)}
+                                            className="flex-shrink-0 transition-opacity hover:opacity-80"
+                                        >
+                                            {volume === 0
+                                                ? <VolumeX className="h-4 w-4" />
+                                                : <Volume2 className="h-4 w-4" />}
+                                        </button>
+                                        <input
+                                            type="range"
+                                            min={0}
+                                            max={1}
+                                            step={0.05}
+                                            value={volume}
+                                            onChange={(e) => handleVolume(Number(e.target.value))}
+                                            className="hidden h-1 w-16 cursor-pointer appearance-none rounded-full bg-white/40 sm:block"
+                                            style={{ accentColor: 'white' }}
+                                        />
+
+                                        {/* Fechar */}
+                                        <button
+                                            onClick={fecharPlayer}
+                                            className="flex-shrink-0 opacity-70 transition-opacity hover:opacity-100"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
+                        {/* Elemento audio (oculto) */}
+                        {audioUrl && (
+                            <audio
+                                ref={audioRef}
+                                src={audioUrl}
+                                onTimeUpdate={() => setTempoAtual(audioRef.current?.currentTime ?? 0)}
+                                onLoadedMetadata={() => setDuracao(audioRef.current?.duration ?? 0)}
+                                onPlay={() => setTocando(true)}
+                                onPause={() => setTocando(false)}
+                                onEnded={() => { setTocando(false); setTempoAtual(0); }}
+                            />
+                        )}
                     </div>
 
                     {/* Letra */}
