@@ -38,6 +38,10 @@ class MusicaController extends Controller
     {
         $musica->load('temas');
 
+        $audioUrl = file_exists(public_path("audio/{$musica->id}.mp3"))
+            ? "/audio/{$musica->id}.mp3"
+            : null;
+
         // Se o usuário estiver logado, buscar suas listas com informação se já contém esta música
         $listas = null;
         if (auth()->check()) {
@@ -53,6 +57,7 @@ class MusicaController extends Controller
         return Inertia::render('musicas/show', [
             'musica' => $musica,
             'listas' => $listas,
+            'audioUrl' => $audioUrl,
         ]);
     }
 
