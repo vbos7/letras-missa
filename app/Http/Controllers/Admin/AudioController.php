@@ -62,12 +62,17 @@ class AudioController extends Controller
             return back()->with('error', 'yt-dlp ou ffmpeg não encontrado. Instale as dependências primeiro.');
         }
 
-        $outputPath = public_path("audio/{$musica->id}.mp3");
+        $outputPath  = public_path("audio/{$musica->id}.mp3");
+        $cookiesFile = '/var/www/yt-cookies/youtube-cookies.txt';
+        $cookiesFlag = file_exists($cookiesFile)
+            ? '--cookies ' . escapeshellarg($cookiesFile)
+            : '';
 
         $command = sprintf(
-            '%s --ffmpeg-location %s --extract-audio --audio-format mp3 --audio-quality 128K --no-playlist --no-warnings --output %s -- %s 2>&1',
+            '%s --ffmpeg-location %s --extract-audio --audio-format mp3 --audio-quality 128K --no-playlist --no-warnings %s --output %s -- %s 2>&1',
             escapeshellarg($ytdlp),
             escapeshellarg($ffmpeg),
+            $cookiesFlag,
             escapeshellarg($outputPath),
             escapeshellarg($request->input('youtube_url'))
         );
