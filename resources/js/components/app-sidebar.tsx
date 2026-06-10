@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/sidebar';
 import { type NavItem, type SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
-import { BookOpen, ClipboardList, Folder, LayoutGrid, Music, Palette } from 'lucide-react';
+import { BookOpen, ClipboardList, FileAudio, Folder, LayoutGrid, Music, Palette } from 'lucide-react';
 
 const footerNavItems: NavItem[] = [
     {
@@ -34,6 +34,7 @@ export function AppSidebar() {
         { title: 'Dashboard', href: '/admin/dashboard', icon: LayoutGrid },
         { title: 'Temas', href: '/admin/temas', icon: Palette },
         { title: 'Músicas', href: '/admin/musicas', icon: Music },
+        { title: 'Áudio', href: '/admin/audio', icon: FileAudio },
         {
             title: 'Solicitações',
             href: '/admin/solicitacoes',

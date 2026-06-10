@@ -11,8 +11,63 @@ function formatarTempo(s: number) {
     return `${m}:${sec.toString().padStart(2, '0')}`;
 }
 
+function esc(s: string) {
+    return (s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function formatarLetraHtml(texto: string) {
+    if (!texto) return '';
+    return esc(texto)
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/__(.*?)__/g, '<u>$1</u>')
+        .replace(/\[(.*?)\]/g, '<span class="badge">$1</span>');
+}
+
 export default function Show({ musica, listas, audioUrl }) {
     const { auth } = usePage().props;
+
+    const handlePrint = () => {
+        const win = window.open('', '_blank');
+        if (!win) return;
+
+        const meta = [
+            musica.autor,
+            musica.tom ? `Tom: ${musica.tom}` : null,
+            musica.temas?.length > 0 ? musica.temas.map((t) => t.nome).join(', ') : null,
+        ].filter(Boolean).map(esc).join(' · ');
+
+        win.document.write(`<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>${esc(musica.titulo)}</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: Georgia, serif; margin: 0; padding: 2cm; color: #000; line-height: 1.7; }
+  .header { display: flex; gap: 20px; align-items: flex-start; border-bottom: 1px solid #ddd; padding-bottom: 14px; margin-bottom: 24px; }
+  .numero { font-size: 42px; font-weight: bold; color: #ccc; line-height: 1; flex-shrink: 0; }
+  h1 { font-size: 24px; font-weight: bold; margin: 0 0 6px; }
+  .meta { font-size: 13px; color: #555; }
+  .letra { font-size: 14px; line-height: 1.85; white-space: pre-line; }
+  .badge { display: inline-block; border: 1px solid #aaa; border-radius: 4px; padding: 0 5px; font-size: 12px; font-weight: 600; margin: 2px 0; }
+  @page { margin: 2cm; size: A4; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="numero">${musica.numero}</div>
+  <div>
+    <h1>${esc(musica.titulo)}</h1>
+    <div class="meta">${meta}</div>
+  </div>
+</div>
+<div class="letra">${formatarLetraHtml(musica.letra)}</div>
+<script>window.addEventListener('load',()=>{window.print();});<\/script>
+</body>
+</html>`);
+        win.document.close();
+    };
 
     // Player de áudio
     const audioRef = useRef<HTMLAudioElement>(null);
@@ -185,77 +240,78 @@ export default function Show({ musica, listas, audioUrl }) {
                                     )}
                                 </div>
 
-                                {/* Barra do player */}
-                                <div
-                                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                                        playerAberto ? 'mt-3 max-h-16 opacity-100' : 'max-h-0 opacity-0'
-                                    }`}
+                            </div>
+                        </div>
+
+                        {/* Barra do player — ocupa toda a largura do cabeçalho */}
+                        <div
+                            className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                                playerAberto ? 'mt-4 max-h-16 opacity-100' : 'max-h-0 opacity-0'
+                            }`}
+                        >
+                            <div className="flex items-center gap-3 rounded-xl bg-white/20 px-4 py-2.5 backdrop-blur-sm">
+                                {/* Play/Pause */}
+                                <button
+                                    onClick={togglePlay}
+                                    className="flex-shrink-0 transition-opacity hover:opacity-80"
                                 >
-                                    <div className="flex items-center gap-2 rounded-xl bg-white/20 px-3 py-2 backdrop-blur-sm">
-                                        {/* Play/Pause */}
-                                        <button
-                                            onClick={togglePlay}
-                                            className="flex-shrink-0 transition-opacity hover:opacity-80"
-                                        >
-                                            {tocando
-                                                ? <Pause className="h-4 w-4" />
-                                                : <Play className="ml-px h-4 w-4" />}
-                                        </button>
+                                    {tocando
+                                        ? <Pause className="h-4 w-4" />
+                                        : <Play className="ml-px h-4 w-4" />}
+                                </button>
 
-                                        {/* Tempo atual */}
-                                        <span className="w-8 flex-shrink-0 text-right text-xs tabular-nums opacity-80">
-                                            {formatarTempo(tempoAtual)}
-                                        </span>
+                                {/* Tempo atual */}
+                                <span className="w-9 flex-shrink-0 text-right text-xs tabular-nums opacity-80">
+                                    {formatarTempo(tempoAtual)}
+                                </span>
 
-                                        {/* Scrubber */}
-                                        <input
-                                            type="range"
-                                            min={0}
-                                            max={duracao || 100}
-                                            value={tempoAtual}
-                                            onChange={(e) => {
-                                                const t = Number(e.target.value);
-                                                setTempoAtual(t);
-                                                if (audioRef.current) audioRef.current.currentTime = t;
-                                            }}
-                                            className="h-1 flex-1 cursor-pointer appearance-none rounded-full bg-white/40"
-                                            style={{ accentColor: 'white' }}
-                                        />
+                                {/* Scrubber */}
+                                <input
+                                    type="range"
+                                    min={0}
+                                    max={duracao || 100}
+                                    value={tempoAtual}
+                                    onChange={(e) => {
+                                        const t = Number(e.target.value);
+                                        setTempoAtual(t);
+                                        if (audioRef.current) audioRef.current.currentTime = t;
+                                    }}
+                                    className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-white/40"
+                                    style={{ accentColor: 'white' }}
+                                />
 
-                                        {/* Duração */}
-                                        <span className="w-8 flex-shrink-0 text-xs tabular-nums opacity-80">
-                                            {formatarTempo(duracao)}
-                                        </span>
+                                {/* Duração */}
+                                <span className="w-9 flex-shrink-0 text-xs tabular-nums opacity-80">
+                                    {formatarTempo(duracao)}
+                                </span>
 
-                                        {/* Volume */}
-                                        <button
-                                            onClick={() => handleVolume(volume > 0 ? 0 : 1)}
-                                            className="flex-shrink-0 transition-opacity hover:opacity-80"
-                                        >
-                                            {volume === 0
-                                                ? <VolumeX className="h-4 w-4" />
-                                                : <Volume2 className="h-4 w-4" />}
-                                        </button>
-                                        <input
-                                            type="range"
-                                            min={0}
-                                            max={1}
-                                            step={0.05}
-                                            value={volume}
-                                            onChange={(e) => handleVolume(Number(e.target.value))}
-                                            className="hidden h-1 w-16 cursor-pointer appearance-none rounded-full bg-white/40 sm:block"
-                                            style={{ accentColor: 'white' }}
-                                        />
+                                {/* Volume */}
+                                <button
+                                    onClick={() => handleVolume(volume > 0 ? 0 : 1)}
+                                    className="flex-shrink-0 transition-opacity hover:opacity-80"
+                                >
+                                    {volume === 0
+                                        ? <VolumeX className="h-4 w-4" />
+                                        : <Volume2 className="h-4 w-4" />}
+                                </button>
+                                <input
+                                    type="range"
+                                    min={0}
+                                    max={1}
+                                    step={0.05}
+                                    value={volume}
+                                    onChange={(e) => handleVolume(Number(e.target.value))}
+                                    className="h-1.5 w-20 cursor-pointer appearance-none rounded-full bg-white/40"
+                                    style={{ accentColor: 'white' }}
+                                />
 
-                                        {/* Fechar */}
-                                        <button
-                                            onClick={fecharPlayer}
-                                            className="flex-shrink-0 opacity-70 transition-opacity hover:opacity-100"
-                                        >
-                                            <X className="h-4 w-4" />
-                                        </button>
-                                    </div>
-                                </div>
+                                {/* Fechar */}
+                                <button
+                                    onClick={fecharPlayer}
+                                    className="flex-shrink-0 opacity-70 transition-opacity hover:opacity-100"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
                             </div>
                         </div>
 
@@ -292,7 +348,7 @@ export default function Show({ musica, listas, audioUrl }) {
                                 {musica.temas?.[0]?.nome || 'outros temas'}
                             </Link>
                             <button
-                                onClick={() => window.print()}
+                                onClick={handlePrint}
                                 className="rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-300"
                             >
                                 Imprimir
@@ -433,20 +489,6 @@ export default function Show({ musica, listas, audioUrl }) {
                 </div>
             )}
 
-            {/* Estilos para impressão */}
-            <style>{`
-                @media print {
-                    header,
-                    footer,
-                    button {
-                        display: none !important;
-                    }
-                    .bg-gradient-to-r {
-                        background: white !important;
-                        color: black !important;
-                    }
-                }
-            `}</style>
         </AppLayout>
     );
 }

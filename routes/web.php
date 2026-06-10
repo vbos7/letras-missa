@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminMusicaController;
 use App\Http\Controllers\Admin\AdminTemaController;
+use App\Http\Controllers\Admin\AudioController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\SolicitacaoController;
 use App\Http\Controllers\Colaborador\ColaboradorMusicaController;
@@ -69,6 +70,15 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
         Route::get('/{musica}/edit', [AdminMusicaController::class, 'edit'])->name('edit');
         Route::put('/{musica}', [AdminMusicaController::class, 'update'])->name('update');
         Route::delete('/{musica}', [AdminMusicaController::class, 'destroy'])->name('destroy');
+    });
+
+    // ==========================================
+    // GERENCIAMENTO DE ÁUDIO
+    // ==========================================
+    Route::prefix('audio')->name('audio.')->group(function () {
+        Route::get('/', [AudioController::class, 'index'])->name('index');
+        Route::post('/{musica}/download', [AudioController::class, 'download'])->name('download');
+        Route::delete('/{musica}', [AudioController::class, 'destroy'])->name('destroy');
     });
 
     // ==========================================
