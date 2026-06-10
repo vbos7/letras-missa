@@ -69,7 +69,7 @@ class AudioController extends Controller
             : '';
 
         $command = sprintf(
-            '%s --ffmpeg-location %s --extract-audio --audio-format mp3 --audio-quality 128K --no-playlist --no-warnings %s --output %s -- %s 2>&1',
+            '%s --ffmpeg-location %s -f bestaudio/best --extract-audio --audio-format mp3 --audio-quality 5 --no-playlist --no-warnings %s --output %s -- %s 2>&1',
             escapeshellarg($ytdlp),
             escapeshellarg($ffmpeg),
             $cookiesFlag,
