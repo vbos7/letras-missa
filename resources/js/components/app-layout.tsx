@@ -41,6 +41,19 @@ export default function AppLayout({ children }) {
         ? [{ name: 'Minhas Listas', href: '/listas', icon: List }]
         : [];
 
+    // Força modo claro em todas as páginas públicas
+    useEffect(() => {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.style.colorScheme = 'light';
+        return () => {
+            // Ao sair da página pública, restaura a preferência salva (para o painel admin)
+            const saved = (localStorage.getItem('appearance') as 'light' | 'dark' | 'system') || 'system';
+            const isDark = saved === 'dark' || (saved === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            document.documentElement.classList.toggle('dark', isDark);
+            document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+        };
+    }, []);
+
     // Fecha o menu ao pressionar ESC
     useEffect(() => {
         const handleEsc = (e) => {
