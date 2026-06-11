@@ -1,5 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
+    FileText,
     FolderOpen,
     Heart,
     Home,
@@ -8,6 +9,7 @@ import {
     LogOut,
     Menu,
     Music,
+    Shield,
     X,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -16,7 +18,18 @@ export default function AppLayout({ children }) {
     const { auth } = usePage().props;
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [sobreModalAberto, setSobreModalAberto] = useState(false);
+    const [termosModalAberto, setTermosModalAberto] = useState(false);
+    const [privacidadeModalAberto, setPrivacidadeModalAberto] = useState(false);
     const [mostrarQRCode, setMostrarQRCode] = useState(false);
+    const [cookieConsentVisible, setCookieConsentVisible] = useState(() => {
+        if (typeof window === 'undefined') return false;
+        return !localStorage.getItem('cookie_consent');
+    });
+
+    const aceitarCookies = () => {
+        localStorage.setItem('cookie_consent', 'accepted');
+        setCookieConsentVisible(false);
+    };
 
     const navigation = [
         { name: 'Início', href: '/', icon: Home },
@@ -266,7 +279,7 @@ export default function AppLayout({ children }) {
             {/* Footer */}
             <footer className="mt-12 border-t border-gray-200 bg-white">
                 <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                    <div className="flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-4">
+                    <div className="flex flex-col items-center justify-center gap-2 sm:flex-row sm:flex-wrap sm:gap-4">
                         <p className="text-center text-sm text-gray-500">
                             © 2025 Cânticos de Missa. Feito para a comunidade.
                         </p>
@@ -280,9 +293,256 @@ export default function AppLayout({ children }) {
                             <Info className="h-4 w-4" />
                             Sobre
                         </button>
+                        <button
+                            onClick={() => setTermosModalAberto(true)}
+                            className="flex items-center gap-1 text-sm transition-colors"
+                            style={{ color: '#C7AB65' }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = '#B89B55'}
+                            onMouseLeave={(e) => e.currentTarget.style.color = '#C7AB65'}
+                        >
+                            <FileText className="h-4 w-4" />
+                            Termos de Uso
+                        </button>
+                        <button
+                            onClick={() => setPrivacidadeModalAberto(true)}
+                            className="flex items-center gap-1 text-sm transition-colors"
+                            style={{ color: '#C7AB65' }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = '#B89B55'}
+                            onMouseLeave={(e) => e.currentTarget.style.color = '#C7AB65'}
+                        >
+                            <Shield className="h-4 w-4" />
+                            Política de Privacidade
+                        </button>
                     </div>
                 </div>
             </footer>
+
+            {/* Modal Termos de Uso */}
+            {termosModalAberto && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+                    onClick={() => setTermosModalAberto(false)}
+                >
+                    <div
+                        className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-xl bg-white shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex flex-shrink-0 items-center justify-between border-b border-gray-200 p-6">
+                            <h3 className="text-2xl font-bold text-gray-900">Termos de Uso</h3>
+                            <button
+                                onClick={() => setTermosModalAberto(false)}
+                                className="rounded-lg p-2 transition-colors hover:bg-gray-100"
+                            >
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+
+                        <div className="overflow-y-auto p-6">
+                            <div className="space-y-5 text-sm text-gray-700">
+                                <p className="text-xs text-gray-400">Última atualização: junho de 2026</p>
+
+                                <div className="space-y-2">
+                                    <h4 className="font-semibold text-gray-900">1. Aceitação dos Termos</h4>
+                                    <p>Ao acessar e utilizar o <strong>Cânticos de Missa</strong>, você concorda com estes Termos de Uso. Caso não concorde, por favor, não utilize o serviço.</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <h4 className="font-semibold text-gray-900">2. Sobre o Serviço</h4>
+                                    <p>O Cânticos de Missa é uma plataforma <strong>gratuita, sem fins lucrativos</strong>, criada para auxiliar a comunidade católica no acesso às letras e repertório de cânticos litúrgicos. Não há interesses comerciais envolvidos.</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <h4 className="font-semibold text-gray-900">3. Direitos Autorais e Conteúdo</h4>
+                                    <p>As letras dos cânticos e os áudios disponíveis nesta plataforma são de propriedade de seus respectivos autores, compositores e editoras. O Cânticos de Missa <strong>não reivindica qualquer propriedade</strong> sobre este conteúdo.</p>
+                                    <p>O conteúdo é disponibilizado exclusivamente para <strong>fins religiosos, litúrgicos e educacionais</strong>, em caráter não comercial, no espírito do serviço à comunidade católica.</p>
+                                    <p>Se você é titular de direitos autorais sobre algum conteúdo presente nesta plataforma e deseja sua remoção, entre em contato conosco e providenciaremos a retirada imediatamente.</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <h4 className="font-semibold text-gray-900">4. Uso dos Áudios</h4>
+                                    <p>Os áudios disponíveis na plataforma são fornecidos <strong>exclusivamente para referência musical</strong> durante o estudo de repertório e preparação de celebrações litúrgicas. É expressamente proibido:</p>
+                                    <ul className="list-inside list-disc space-y-1 pl-4">
+                                        <li>Baixar ou redistribuir os áudios</li>
+                                        <li>Utilizar os áudios para fins comerciais</li>
+                                        <li>Reproduzir publicamente os áudios fora do contexto religioso</li>
+                                    </ul>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <h4 className="font-semibold text-gray-900">5. Contas de Usuário</h4>
+                                    <p>Ao criar uma conta, você é responsável pela segurança de suas credenciais e por todas as atividades realizadas em sua conta. É proibido utilizar a plataforma para qualquer finalidade ilícita ou que viole direitos de terceiros.</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <h4 className="font-semibold text-gray-900">6. Limitação de Responsabilidade</h4>
+                                    <p>O Cânticos de Missa é fornecido "como está", sem garantias de disponibilidade ininterrupta. Não nos responsabilizamos por eventuais imprecisões nas letras ou pelo uso indevido do conteúdo por parte dos usuários.</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <h4 className="font-semibold text-gray-900">7. Alterações nos Termos</h4>
+                                    <p>Reservamo-nos o direito de atualizar estes termos a qualquer momento. O uso continuado da plataforma após alterações constitui aceitação dos novos termos.</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <h4 className="font-semibold text-gray-900">8. Contato</h4>
+                                    <p>Para dúvidas, solicitações de remoção de conteúdo ou qualquer questão relacionada a estes termos, entre em contato pelo e-mail <strong>contato@viniciusboschetti.com.br</strong>.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex-shrink-0 border-t border-gray-200 bg-gray-50 px-6 py-4">
+                            <button
+                                onClick={() => setTermosModalAberto(false)}
+                                className="w-full rounded-lg px-4 py-2 font-medium text-white transition-colors"
+                                style={{ backgroundColor: '#C7AB65' }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#B89B55'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#C7AB65'}
+                            >
+                                Entendi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Política de Privacidade */}
+            {privacidadeModalAberto && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+                    onClick={() => setPrivacidadeModalAberto(false)}
+                >
+                    <div
+                        className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-xl bg-white shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex flex-shrink-0 items-center justify-between border-b border-gray-200 p-6">
+                            <h3 className="text-2xl font-bold text-gray-900">Política de Privacidade</h3>
+                            <button
+                                onClick={() => setPrivacidadeModalAberto(false)}
+                                className="rounded-lg p-2 transition-colors hover:bg-gray-100"
+                            >
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+
+                        <div className="overflow-y-auto p-6">
+                            <div className="space-y-5 text-sm text-gray-700">
+                                <p className="text-xs text-gray-400">Última atualização: junho de 2026</p>
+
+                                <div className="space-y-2">
+                                    <h4 className="font-semibold text-gray-900">1. Introdução</h4>
+                                    <p>O <strong>Cânticos de Missa</strong> está comprometido com a proteção dos seus dados pessoais, em conformidade com a <strong>Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018)</strong>. Esta política explica como coletamos, usamos e protegemos suas informações.</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <h4 className="font-semibold text-gray-900">2. Dados Coletados</h4>
+                                    <p>Coletamos apenas o mínimo necessário para o funcionamento da plataforma:</p>
+                                    <ul className="list-inside list-disc space-y-1 pl-4">
+                                        <li><strong>Cadastro:</strong> nome e endereço de e-mail</li>
+                                        <li><strong>Uso:</strong> listas criadas e preferências de navegação dentro da plataforma</li>
+                                    </ul>
+                                    <p>Não coletamos dados de pagamento, documentos pessoais ou informações sensíveis.</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <h4 className="font-semibold text-gray-900">3. Finalidade do Tratamento</h4>
+                                    <p>Seus dados são utilizados exclusivamente para:</p>
+                                    <ul className="list-inside list-disc space-y-1 pl-4">
+                                        <li>Permitir o acesso à plataforma e suas funcionalidades</li>
+                                        <li>Salvar e gerenciar suas listas de músicas</li>
+                                        <li>Comunicações relacionadas ao serviço, quando necessário</li>
+                                    </ul>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <h4 className="font-semibold text-gray-900">4. Compartilhamento de Dados</h4>
+                                    <p>Seus dados <strong>não são vendidos, alugados ou compartilhados</strong> com terceiros para fins comerciais. Podemos compartilhá-los apenas quando exigido por lei ou por ordem judicial.</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <h4 className="font-semibold text-gray-900">5. Cookies</h4>
+                                    <p>Utilizamos apenas cookies técnicos, estritamente necessários para autenticação e funcionamento da plataforma. Não utilizamos cookies de rastreamento ou publicidade.</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <h4 className="font-semibold text-gray-900">6. Segurança</h4>
+                                    <p>Adotamos medidas técnicas de segurança para proteger seus dados contra acesso não autorizado, alteração, divulgação ou destruição.</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <h4 className="font-semibold text-gray-900">7. Seus Direitos (LGPD)</h4>
+                                    <p>Conforme a LGPD, você tem direito a:</p>
+                                    <ul className="list-inside list-disc space-y-1 pl-4">
+                                        <li>Confirmar a existência de tratamento dos seus dados</li>
+                                        <li>Acessar, corrigir ou atualizar seus dados</li>
+                                        <li>Solicitar a exclusão dos seus dados pessoais</li>
+                                        <li>Revogar o consentimento a qualquer momento</li>
+                                        <li>Portabilidade dos dados</li>
+                                    </ul>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <h4 className="font-semibold text-gray-900">8. Como Exercer Seus Direitos</h4>
+                                    <p>Para exercer qualquer um dos direitos acima ou tirar dúvidas sobre o tratamento dos seus dados, entre em contato conosco pelo e-mail <strong>contato@viniciusboschetti.com.br</strong>. Responderemos em até 15 dias úteis.</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <h4 className="font-semibold text-gray-900">9. Encarregado de Dados (DPO)</h4>
+                                    <p>Responsável pelo tratamento de dados: <strong>Vinicius Chagas</strong>, desenvolvedor e mantenedor da plataforma.</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <h4 className="font-semibold text-gray-900">10. Alterações nesta Política</h4>
+                                    <p>Esta política pode ser atualizada periodicamente. Recomendamos revisitá-la ocasionalmente. Alterações significativas serão comunicadas através da plataforma.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex-shrink-0 border-t border-gray-200 bg-gray-50 px-6 py-4">
+                            <button
+                                onClick={() => setPrivacidadeModalAberto(false)}
+                                className="w-full rounded-lg px-4 py-2 font-medium text-white transition-colors"
+                                style={{ backgroundColor: '#C7AB65' }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#B89B55'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#C7AB65'}
+                            >
+                                Entendi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Barra de Consentimento de Cookies */}
+            {cookieConsentVisible && (
+                <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white shadow-lg">
+                    <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+                        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <p className="text-sm text-gray-600">
+                                Utilizamos cookies para melhorar sua experiência e exibir anúncios relevantes via Google AdSense.
+                                Ao continuar navegando, você concorda com nossa{' '}
+                                <button
+                                    onClick={() => setPrivacidadeModalAberto(true)}
+                                    className="underline transition-colors"
+                                    style={{ color: '#C7AB65' }}
+                                >
+                                    Política de Privacidade
+                                </button>
+                                .
+                            </p>
+                            <button
+                                onClick={aceitarCookies}
+                                className="flex-shrink-0 rounded-lg px-5 py-2 text-sm font-medium text-white transition-colors"
+                                style={{ backgroundColor: '#C7AB65' }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#B89B55'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#C7AB65'}
+                            >
+                                Aceitar e continuar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Modal Sobre */}
             {sobreModalAberto && (
