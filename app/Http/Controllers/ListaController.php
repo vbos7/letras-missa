@@ -201,6 +201,11 @@ class ListaController extends Controller
         $lista->incrementarVisualizacoes();
         $lista->load(['musicas.temas', 'user']);
 
+        // Indica quais músicas possuem arquivo de áudio (nomeado pelo número).
+        $lista->musicas->each(function ($m) {
+            $m->has_audio = file_exists(public_path("audio/{$m->numero}.mp3"));
+        });
+
         return Inertia::render('listas/compartilhada', [
             'lista' => $lista,
         ]);
