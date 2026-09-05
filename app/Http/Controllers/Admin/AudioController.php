@@ -18,6 +18,12 @@ class AudioController extends Controller
             "/usr/bin/{$name}",
         ];
 
+        // Instalações via "pip install --user" ficam em ~/Library/Python/X.Y/bin
+        $home = $_SERVER['HOME'] ?? getenv('HOME') ?: '/root';
+        foreach (glob($home . '/Library/Python/*/bin/' . $name) ?: [] as $path) {
+            $candidates[] = $path;
+        }
+
         foreach ($candidates as $path) {
             if (file_exists($path)) {
                 return $path;
@@ -29,17 +35,47 @@ class AudioController extends Controller
         return $which ?: null;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $musicas = Musica::orderBy('numero')->get()->map(fn ($m) => [
+        // Números das músicas que possuem arquivo de áudio (a partir do disco).
+        // O arquivo é nomeado pelo número da música (ex.: audio/123.mp3).
+        $numerosComAudio = [];
+        foreach (glob(public_path('audio') . '/*.mp3') ?: [] as $file) {
+            $numero = (int) pathinfo($file, PATHINFO_FILENAME);
+            if ($numero > 0) {
+                $numerosComAudio[] = $numero;
+            }
+        }
+
+        $query = Musica::query()->orderBy('numero');
+
+        if ($request->filled('search')) {
+            $query->search($request->search);
+        }
+
+        if ($request->status === 'com') {
+            $query->whereIn('numero', $numerosComAudio);
+        } elseif ($request->status === 'sem') {
+            $query->whereNotIn('numero', $numerosComAudio);
+        }
+
+        $musicas = $query->paginate(20)->withQueryString()->through(fn ($m) => [
             'id'        => $m->id,
             'numero'    => $m->numero,
             'titulo'    => $m->titulo,
-            'has_audio' => file_exists(public_path("audio/{$m->id}.mp3")),
+            'has_audio' => in_array($m->numero, $numerosComAudio, true),
         ]);
 
         return Inertia::render('admin/audio/index', [
-            'musicas'         => $musicas,
+            'musicas' => $musicas,
+            'filters' => [
+                'search' => $request->search,
+                'status' => $request->status ?? '',
+            ],
+            'stats' => [
+                'total'     => Musica::count(),
+                'com_audio' => Musica::whereIn('numero', $numerosComAudio)->count(),
+            ],
             'ytdlpInstalled'  => $this->findBinary('yt-dlp') !== null,
             'ffmpegInstalled' => $this->findBinary('ffmpeg') !== null,
         ]);
@@ -62,7 +98,7 @@ class AudioController extends Controller
             return back()->with('error', 'yt-dlp ou ffmpeg não encontrado. Instale as dependências primeiro.');
         }
 
-        $outputPath  = public_path("audio/{$musica->id}.mp3");
+        $outputPath  = public_path("audio/{$musica->numero}.mp3");
         $cookiesFile = '/var/www/yt-cookies/youtube-cookies.txt';
         $cookiesFlag = file_exists($cookiesFile)
             ? '--cookies ' . escapeshellarg($cookiesFile)
@@ -92,7 +128,7 @@ class AudioController extends Controller
 
     public function destroy(Musica $musica)
     {
-        $path = public_path("audio/{$musica->id}.mp3");
+        $path = public_path("audio/{$musica->numero}.mp3");
 
         if (!file_exists($path)) {
             return back()->with('error', 'Arquivo de áudio não encontrado.');

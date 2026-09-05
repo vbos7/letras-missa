@@ -38,23 +38,37 @@ class Musica extends Model
             ->orderBy('ordem');
     }
 
-    // Scope para busca (accent-insensitive no MySQL via COLLATE utf8mb4_general_ci)
+    // Scope para busca. Ignora acentuação (COLLATE utf8mb4_general_ci no MySQL)
+    // e pontuação: a busca é quebrada em palavras (separadas por espaços ou
+    // pontuação) e cada palavra precisa aparecer em algum dos campos. Assim
+    // "Senhor que vieste salvar" encontra "Senhor, que vieste salvar...".
     public function scopeSearch($query, $search)
     {
         $isMySQL = DB::connection()->getDriverName() === 'mysql';
-        $term = "%{$search}%";
 
-        return $query->where(function ($q) use ($term, $isMySQL) {
-            if ($isMySQL) {
-                $q->whereRaw('numero LIKE ?', [$term])
-                    ->orWhereRaw('titulo COLLATE utf8mb4_general_ci LIKE ?', [$term])
-                    ->orWhereRaw('autor COLLATE utf8mb4_general_ci LIKE ?', [$term])
-                    ->orWhereRaw('letra COLLATE utf8mb4_general_ci LIKE ?', [$term]);
-            } else {
-                $q->where('numero', 'like', $term)
-                    ->orWhere('titulo', 'like', $term)
-                    ->orWhere('autor', 'like', $term)
-                    ->orWhere('letra', 'like', $term);
+        // Quebra a busca em palavras, descartando pontuação e espaços extras.
+        $palavras = preg_split('/[^\p{L}\p{N}]+/u', (string) $search, -1, PREG_SPLIT_NO_EMPTY);
+
+        if (empty($palavras)) {
+            return $query;
+        }
+
+        return $query->where(function ($q) use ($palavras, $isMySQL) {
+            foreach ($palavras as $palavra) {
+                $term = "%{$palavra}%";
+                $q->where(function ($sub) use ($term, $isMySQL) {
+                    if ($isMySQL) {
+                        $sub->whereRaw('numero LIKE ?', [$term])
+                            ->orWhereRaw('titulo COLLATE utf8mb4_general_ci LIKE ?', [$term])
+                            ->orWhereRaw('autor COLLATE utf8mb4_general_ci LIKE ?', [$term])
+                            ->orWhereRaw('letra COLLATE utf8mb4_general_ci LIKE ?', [$term]);
+                    } else {
+                        $sub->where('numero', 'like', $term)
+                            ->orWhere('titulo', 'like', $term)
+                            ->orWhere('autor', 'like', $term)
+                            ->orWhere('letra', 'like', $term);
+                    }
+                });
             }
         });
     }

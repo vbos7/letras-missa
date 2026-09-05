@@ -38,8 +38,8 @@ class MusicaController extends Controller
     {
         $musica->load('temas');
 
-        $audioUrl = file_exists(public_path("audio/{$musica->id}.mp3"))
-            ? "/audio/{$musica->id}.mp3"
+        $audioUrl = file_exists(public_path("audio/{$musica->numero}.mp3"))
+            ? "/audio/{$musica->numero}.mp3"
             : null;
 
         // Se o usuário estiver logado, buscar suas listas com informação se já contém esta música
