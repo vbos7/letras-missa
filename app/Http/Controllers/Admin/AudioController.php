@@ -63,6 +63,7 @@ class AudioController extends Controller
             'id'        => $m->id,
             'numero'    => $m->numero,
             'titulo'    => $m->titulo,
+            'autor'     => $m->autor,
             'has_audio' => in_array($m->numero, $numerosComAudio, true),
         ]);
 

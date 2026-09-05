@@ -35,6 +35,7 @@ interface Musica {
     id: number;
     numero: number;
     titulo: string;
+    autor: string | null;
     has_audio: boolean;
 }
 
@@ -224,9 +225,16 @@ export default function AudioIndex({
                                             {musica.numero}
                                         </span>
 
-                                        <span className="min-w-0 flex-1 truncate font-medium">
-                                            {musica.titulo}
-                                        </span>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate font-medium">
+                                                {musica.titulo}
+                                            </p>
+                                            {musica.autor && (
+                                                <p className="truncate text-sm text-muted-foreground">
+                                                    {musica.autor}
+                                                </p>
+                                            )}
+                                        </div>
 
                                         <Badge
                                             variant={
