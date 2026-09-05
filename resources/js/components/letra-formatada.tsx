@@ -35,7 +35,7 @@ export default function LetraFormatada({
 
         // [Refrão] ou [Intro] -> badge
         texto = texto.replace(
-            /\[(.*?)\]/g,
+            /\[(.*?)]/g,
             '<span class="inline-block rounded bg-blue-100 px-2 py-1 text-sm font-semibold text-blue-700 my-1">$1</span>',
         );
 

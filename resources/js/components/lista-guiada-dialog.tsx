@@ -119,7 +119,11 @@ export function ListaGuiadaDialog({ aberto, onFechar, temas }: Props) {
 
         if (audioMusica?.id === musica.id) {
             // Mesma música: toggle
-            tocando ? audioRef.current.pause() : audioRef.current.play();
+            if (tocando) {
+                audioRef.current.pause();
+            } else {
+                audioRef.current.play();
+            }
         } else {
             // Nova música
             setAudioMusica(musica);

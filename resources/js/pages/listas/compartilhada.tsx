@@ -37,7 +37,7 @@ function formatarLetraHtml(texto: string) {
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
         .replace(/__(.*?)__/g, '<u>$1</u>')
-        .replace(/\[(.*?)\]/g, '<span class="badge">$1</span>');
+        .replace(/\[(.*?)]/g, '<span class="badge">$1</span>');
 }
 
 export default function Compartilhada({ lista }) {
@@ -135,7 +135,7 @@ export default function Compartilhada({ lista }) {
 </head>
 <body>
 ${musicasHtml}
-<script>window.addEventListener('load',()=>{window.print();});<\/script>
+<script>window.addEventListener('load',()=>{window.print();});</script>
 </body>
 </html>`);
         win.document.close();
@@ -223,7 +223,7 @@ ${musicasHtml}
 
                 {/* Lista de Músicas */}
                 <div className="space-y-3">
-                    {lista.musicas.map((musica, index) => (
+                    {lista.musicas.map((musica) => (
                         <div
                             key={musica.id}
                             className="overflow-hidden rounded-lg bg-white shadow-sm"

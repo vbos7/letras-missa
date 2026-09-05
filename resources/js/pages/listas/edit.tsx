@@ -182,11 +182,14 @@ export default function Edit({ lista, todasMusicas, temas, autores }: Props) {
             },
             {
                 preserveScroll: true,
-                onSuccess: (page: any) => {
+                onSuccess: (page) => {
                     setModalAberto(false);
                     setBuscaMusica('');
                     // Atualizar lista local
-                    setMusicas(page.props.lista.musicas);
+                    const props = page.props as unknown as {
+                        lista: { musicas: Musica[] };
+                    };
+                    setMusicas(props.lista.musicas);
                 },
             },
         );
@@ -196,9 +199,12 @@ export default function Edit({ lista, todasMusicas, temas, autores }: Props) {
         if (confirm('Remover esta música da lista?')) {
             router.delete(`/${lista.id}/musicas/${musica.id}`, {
                 preserveScroll: true,
-                onSuccess: (page: any) => {
+                onSuccess: (page) => {
                     // Atualizar lista local
-                    setMusicas(page.props.lista.musicas);
+                    const props = page.props as unknown as {
+                        lista: { musicas: Musica[] };
+                    };
+                    setMusicas(props.lista.musicas);
                 },
             });
         }
