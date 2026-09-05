@@ -7,13 +7,28 @@ import {
     Clock,
     MapPin,
     Music2,
+    Pause,
+    Play,
     Printer,
     User,
+    Volume2,
+    VolumeX,
+    X,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 function esc(s: string) {
-    return (s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return (s ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+function formatarTempo(s: number) {
+    if (!isFinite(s) || s < 0) return '0:00';
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${sec.toString().padStart(2, '0')}`;
 }
 
 function formatarLetraHtml(texto: string) {
@@ -22,24 +37,77 @@ function formatarLetraHtml(texto: string) {
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
         .replace(/__(.*?)__/g, '<u>$1</u>')
-        .replace(/\[(.*?)\]/g, '<span class="badge">$1</span>');
+        .replace(/\[(.*?)]/g, '<span class="badge">$1</span>');
 }
 
 export default function Compartilhada({ lista }) {
     const [musicaExpandida, setMusicaExpandida] = useState(null);
 
+    // Player de áudio (fixo no rodapé)
+    const audioRef = useRef<HTMLAudioElement>(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [audioMusica, setAudioMusica] = useState<any>(null);
+    const [tocando, setTocando] = useState(false);
+    const [tempoAtual, setTempoAtual] = useState(0);
+    const [duracao, setDuracao] = useState(0);
+    const [volume, setVolume] = useState(1);
+
+    const playMusica = (musica) => {
+        if (!audioRef.current) return;
+
+        if (audioMusica?.id === musica.id) {
+            // Mesma música: alterna play/pause
+            if (tocando) {
+                audioRef.current.pause();
+            } else {
+                audioRef.current.play();
+            }
+        } else {
+            // Nova música
+            setAudioMusica(musica);
+            setTempoAtual(0);
+            setDuracao(0);
+            audioRef.current.src = `/audio/${musica.numero}.mp3`;
+            audioRef.current.play().catch(() => {
+                setAudioMusica(null);
+            });
+        }
+    };
+
+    const fecharPlayer = () => {
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.src = '';
+        }
+        setAudioMusica(null);
+        setTocando(false);
+        setTempoAtual(0);
+        setDuracao(0);
+    };
+
+    const handleVolume = (v: number) => {
+        setVolume(v);
+        if (audioRef.current) audioRef.current.volume = v;
+    };
+
     const handlePrintLista = () => {
         const win = window.open('', '_blank');
         if (!win) return;
 
-        const musicasHtml = lista.musicas.map((musica, i) => {
-            const isLast = i === lista.musicas.length - 1;
-            const meta = [musica.autor, musica.tom ? `Tom: ${musica.tom}` : null]
-                .filter(Boolean).map(esc).join(' · ');
-            const obs = musica.pivot?.observacao
-                ? `<div style="margin-top:14px;padding:10px 12px;border-left:3px solid #C7AB65;background:#fffbf0;font-size:12px"><strong>Obs.:</strong> ${esc(musica.pivot.observacao)}</div>`
-                : '';
-            return `<div style="page-break-after:${isLast ? 'avoid' : 'always'}">
+        const musicasHtml = lista.musicas
+            .map((musica, i) => {
+                const isLast = i === lista.musicas.length - 1;
+                const meta = [
+                    musica.autor,
+                    musica.tom ? `Tom: ${musica.tom}` : null,
+                ]
+                    .filter(Boolean)
+                    .map(esc)
+                    .join(' · ');
+                const obs = musica.pivot?.observacao
+                    ? `<div style="margin-top:14px;padding:10px 12px;border-left:3px solid #C7AB65;background:#fffbf0;font-size:12px"><strong>Obs.:</strong> ${esc(musica.pivot.observacao)}</div>`
+                    : '';
+                return `<div style="page-break-after:${isLast ? 'avoid' : 'always'}">
   <div style="display:flex;gap:18px;align-items:flex-start;border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:22px">
     <span style="font-size:38px;font-weight:bold;color:#ccc;line-height:1;flex-shrink:0">${musica.numero}</span>
     <div>
@@ -50,7 +118,8 @@ export default function Compartilhada({ lista }) {
   <div style="font-size:14px;line-height:1.85;white-space:pre-line">${formatarLetraHtml(musica.letra)}</div>
   ${obs}
 </div>`;
-        }).join('\n');
+            })
+            .join('\n');
 
         win.document.write(`<!DOCTYPE html>
 <html lang="pt-BR">
@@ -66,7 +135,7 @@ export default function Compartilhada({ lista }) {
 </head>
 <body>
 ${musicasHtml}
-<script>window.addEventListener('load',()=>{window.print();});<\/script>
+<script>window.addEventListener('load',()=>{window.print();});</script>
 </body>
 </html>`);
         win.document.close();
@@ -78,9 +147,15 @@ ${musicasHtml}
 
     return (
         <AppLayout>
-            <div className="mx-auto max-w-3xl">
+            <div className={`mx-auto max-w-3xl ${audioMusica ? 'pb-28' : ''}`}>
                 {/* Header da Lista */}
-                <div className="mb-6 rounded-xl p-6 text-white shadow-lg md:p-8" style={{ background: 'linear-gradient(135deg, #C7AB65 0%, #B89B55 100%)' }}>
+                <div
+                    className="mb-6 rounded-xl p-6 text-white shadow-lg md:p-8"
+                    style={{
+                        background:
+                            'linear-gradient(135deg, #C7AB65 0%, #B89B55 100%)',
+                    }}
+                >
                     <h1 className="mb-4 text-3xl font-bold md:text-4xl">
                         {lista.nome}
                     </h1>
@@ -115,7 +190,7 @@ ${musicasHtml}
                         )}
                         <div className="flex items-center gap-2">
                             <User className="h-4 w-4" />
-                            <span>Criado por {lista.user.name}</span>
+                            <span>Lista criada por {lista.user.name}</span>
                         </div>
                     </div>
 
@@ -129,13 +204,15 @@ ${musicasHtml}
                             <Music2 className="h-4 w-4" />
                             <span className="font-medium">
                                 {lista.musicas.length}{' '}
-                                {lista.musicas.length === 1 ? 'música' : 'músicas'}
+                                {lista.musicas.length === 1
+                                    ? 'música'
+                                    : 'músicas'}
                             </span>
                         </div>
                         {lista.musicas.length > 0 && (
                             <button
                                 onClick={handlePrintLista}
-                                className="inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 backdrop-blur-sm font-medium transition-all hover:bg-white/30"
+                                className="inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 font-medium backdrop-blur-sm transition-all hover:bg-white/30"
                             >
                                 <Printer className="h-4 w-4" />
                                 Imprimir Lista
@@ -146,7 +223,7 @@ ${musicasHtml}
 
                 {/* Lista de Músicas */}
                 <div className="space-y-3">
-                    {lista.musicas.map((musica, index) => (
+                    {lista.musicas.map((musica) => (
                         <div
                             key={musica.id}
                             className="overflow-hidden rounded-lg bg-white shadow-sm"
@@ -156,7 +233,13 @@ ${musicasHtml}
                                 onClick={() => toggleMusica(musica.id)}
                                 className="flex w-full items-center gap-4 p-4 transition-colors hover:bg-gray-50"
                             >
-                                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg font-bold" style={{ backgroundColor: '#F5F0E8', color: '#C7AB65' }}>
+                                <div
+                                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg font-bold"
+                                    style={{
+                                        backgroundColor: '#F5F0E8',
+                                        color: '#C7AB65',
+                                    }}
+                                >
                                     {musica.numero}
                                 </div>
                                 <div className="min-w-0 flex-1 text-left">
@@ -165,7 +248,13 @@ ${musicasHtml}
                                     </h3>
                                     <div className="flex flex-wrap gap-2 text-xs">
                                         {musica.tema && (
-                                            <span className="rounded-full px-2 py-1" style={{ backgroundColor: '#F5F0E8', color: '#8B7A45' }}>
+                                            <span
+                                                className="rounded-full px-2 py-1"
+                                                style={{
+                                                    backgroundColor: '#F5F0E8',
+                                                    color: '#8B7A45',
+                                                }}
+                                            >
                                                 {musica.tema.nome}
                                             </span>
                                         )}
@@ -191,7 +280,47 @@ ${musicasHtml}
                             {/* Letra da Música (Expansível) */}
                             {musicaExpandida === musica.id && (
                                 <div className="border-t border-gray-200 bg-gray-50 p-4">
-                                    <LetraFormatada letra={musica.letra} />
+                                    <LetraFormatada
+                                        letra={musica.letra}
+                                        acaoDireita={
+                                            musica.has_audio ? (
+                                                <button
+                                                    onClick={() =>
+                                                        playMusica(musica)
+                                                    }
+                                                    title={
+                                                        audioMusica?.id ===
+                                                            musica.id && tocando
+                                                            ? 'Pausar'
+                                                            : 'Ouvir'
+                                                    }
+                                                    className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                                                        audioMusica?.id ===
+                                                        musica.id
+                                                            ? 'border-transparent text-white'
+                                                            : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'
+                                                    }`}
+                                                    style={
+                                                        audioMusica?.id ===
+                                                        musica.id
+                                                            ? {
+                                                                  backgroundColor:
+                                                                      '#C7AB65',
+                                                              }
+                                                            : {}
+                                                    }
+                                                >
+                                                    {audioMusica?.id ===
+                                                        musica.id && tocando ? (
+                                                        <Pause className="h-4 w-4" />
+                                                    ) : (
+                                                        <Play className="h-4 w-4" />
+                                                    )}
+                                                    Ouvir
+                                                </button>
+                                            ) : null
+                                        }
+                                    />
                                     {musica.pivot?.observacao && (
                                         <div className="mt-4 rounded border-l-4 border-yellow-400 bg-yellow-50 p-3">
                                             <p className="text-sm text-yellow-800">
@@ -225,14 +354,133 @@ ${musicasHtml}
                         href="/register"
                         className="inline-block rounded-lg px-6 py-3 font-semibold text-white transition-colors"
                         style={{ backgroundColor: '#C7AB65' }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#B89B55'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#C7AB65'}
+                        onMouseEnter={(e) =>
+                            (e.currentTarget.style.backgroundColor = '#B89B55')
+                        }
+                        onMouseLeave={(e) =>
+                            (e.currentTarget.style.backgroundColor = '#C7AB65')
+                        }
                     >
                         Criar Minha Lista
                     </a>
                 </div>
             </div>
 
+            {/* Player fixo no rodapé */}
+            {audioMusica && (
+                <div
+                    className="fixed inset-x-0 bottom-0 z-50 border-t shadow-[0_-2px_12px_rgba(0,0,0,0.08)]"
+                    style={{ backgroundColor: '#FDFAF4' }}
+                >
+                    <div className="mx-auto max-w-3xl px-4 py-2.5">
+                        {/* Info da música */}
+                        <p className="mb-2 truncate text-sm font-medium text-gray-800">
+                            {audioMusica?.numero && (
+                                <span
+                                    className="mr-1.5 font-bold"
+                                    style={{ color: '#C7AB65' }}
+                                >
+                                    {audioMusica.numero}
+                                </span>
+                            )}
+                            {audioMusica?.titulo}
+                        </p>
+
+                        {/* Controles */}
+                        <div className="flex items-center gap-2.5">
+                            {/* Play / Pause */}
+                            <button
+                                onClick={() =>
+                                    audioMusica && playMusica(audioMusica)
+                                }
+                                className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-white transition-opacity hover:opacity-80"
+                                style={{ backgroundColor: '#C7AB65' }}
+                            >
+                                {tocando ? (
+                                    <Pause className="h-3.5 w-3.5" />
+                                ) : (
+                                    <Play className="ml-0.5 h-3.5 w-3.5" />
+                                )}
+                            </button>
+
+                            {/* Tempo atual */}
+                            <span className="w-9 flex-shrink-0 text-right text-xs text-gray-500 tabular-nums">
+                                {formatarTempo(tempoAtual)}
+                            </span>
+
+                            {/* Scrubber */}
+                            <input
+                                type="range"
+                                min={0}
+                                max={duracao || 100}
+                                value={tempoAtual}
+                                onChange={(e) => {
+                                    const t = Number(e.target.value);
+                                    setTempoAtual(t);
+                                    if (audioRef.current)
+                                        audioRef.current.currentTime = t;
+                                }}
+                                className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-gray-200"
+                                style={{ accentColor: '#C7AB65' }}
+                            />
+
+                            {/* Duração */}
+                            <span className="w-9 flex-shrink-0 text-xs text-gray-500 tabular-nums">
+                                {formatarTempo(duracao)}
+                            </span>
+
+                            {/* Volume */}
+                            <button
+                                onClick={() => handleVolume(volume > 0 ? 0 : 1)}
+                                className="flex-shrink-0 text-gray-400 transition-colors hover:text-gray-600"
+                            >
+                                {volume === 0 ? (
+                                    <VolumeX className="h-4 w-4" />
+                                ) : (
+                                    <Volume2 className="h-4 w-4" />
+                                )}
+                            </button>
+                            <input
+                                type="range"
+                                min={0}
+                                max={1}
+                                step={0.05}
+                                value={volume}
+                                onChange={(e) =>
+                                    handleVolume(Number(e.target.value))
+                                }
+                                className="hidden h-1.5 w-16 cursor-pointer appearance-none rounded-full bg-gray-200 sm:block"
+                                style={{ accentColor: '#C7AB65' }}
+                            />
+
+                            {/* Fechar player */}
+                            <button
+                                onClick={fecharPlayer}
+                                className="flex-shrink-0 text-gray-400 transition-colors hover:text-gray-600"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Elemento de áudio (oculto) */}
+            <audio
+                ref={audioRef}
+                onTimeUpdate={() =>
+                    setTempoAtual(audioRef.current?.currentTime ?? 0)
+                }
+                onLoadedMetadata={() =>
+                    setDuracao(audioRef.current?.duration ?? 0)
+                }
+                onPlay={() => setTocando(true)}
+                onPause={() => setTocando(false)}
+                onEnded={() => {
+                    setTocando(false);
+                    setTempoAtual(0);
+                }}
+            />
         </AppLayout>
     );
 }
