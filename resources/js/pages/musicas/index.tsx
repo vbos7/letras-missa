@@ -6,6 +6,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { normalizarBusca } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
 import { Filter, Music2, Search, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -21,15 +22,15 @@ export default function Index({ musicas, temas, autores }) {
     const musicasFiltradas = useMemo(() => {
         let resultado = [...musicas];
 
-        // Filtro de busca
+        // Filtro de busca (ignora acentuação e pontuação)
         if (busca.trim()) {
-            const buscaLower = busca.toLowerCase();
+            const buscaNorm = normalizarBusca(busca);
             resultado = resultado.filter(
                 (musica) =>
-                    musica.numero.toString().includes(buscaLower) ||
-                    musica.titulo.toLowerCase().includes(buscaLower) ||
-                    musica.letra.toLowerCase().includes(buscaLower) ||
-                    musica.autor?.toLowerCase().includes(buscaLower),
+                    musica.numero.toString().includes(buscaNorm) ||
+                    normalizarBusca(musica.titulo).includes(buscaNorm) ||
+                    normalizarBusca(musica.letra).includes(buscaNorm) ||
+                    normalizarBusca(musica.autor ?? '').includes(buscaNorm),
             );
         }
 
@@ -95,8 +96,12 @@ export default function Index({ musicas, temas, autores }) {
                         onClick={() => setModalAberto(true)}
                         className="relative rounded-lg px-4 py-3 font-medium text-white shadow-lg transition-all hover:shadow-xl"
                         style={{ backgroundColor: '#C7AB65' }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#B89B55'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#C7AB65'}
+                        onMouseEnter={(e) =>
+                            (e.currentTarget.style.backgroundColor = '#B89B55')
+                        }
+                        onMouseLeave={(e) =>
+                            (e.currentTarget.style.backgroundColor = '#C7AB65')
+                        }
                     >
                         <div className="flex items-center gap-2">
                             <Filter className="h-5 w-5" />
@@ -121,11 +126,12 @@ export default function Index({ musicas, temas, autores }) {
                             placeholder="Buscar por número, título, letra ou autor..."
                             className="w-full rounded-lg border border-gray-300 bg-white py-3 pr-4 pl-10 shadow-sm transition-shadow focus:shadow-md"
                             style={{
-                                borderColor: '#d1d5db'
+                                borderColor: '#d1d5db',
                             }}
                             onFocus={(e) => {
                                 e.currentTarget.style.borderColor = '#C7AB65';
-                                e.currentTarget.style.outline = '2px solid #C7AB65';
+                                e.currentTarget.style.outline =
+                                    '2px solid #C7AB65';
                                 e.currentTarget.style.outlineOffset = '2px';
                             }}
                             onBlur={(e) => {
@@ -140,19 +146,32 @@ export default function Index({ musicas, temas, autores }) {
                 {temFiltrosAtivos && (
                     <div className="mb-4 flex flex-wrap gap-2">
                         {temaSelecionado && (
-                            <span className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-medium" style={{ backgroundColor: '#F5F0E8', color: '#8B7A45' }}>
+                            <span
+                                className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-medium"
+                                style={{
+                                    backgroundColor: '#F5F0E8',
+                                    color: '#8B7A45',
+                                }}
+                            >
                                 Tema:{' '}
                                 {
                                     temas.find(
-                                        (t) => t.id === parseInt(temaSelecionado),
+                                        (t) =>
+                                            t.id === parseInt(temaSelecionado),
                                     )?.nome
                                 }
                                 <button
                                     onClick={() => setTemaSelecionado('')}
                                     className="rounded-full"
                                     style={{ backgroundColor: 'transparent' }}
-                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E5DFD0'}
-                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                    onMouseEnter={(e) =>
+                                        (e.currentTarget.style.backgroundColor =
+                                            '#E5DFD0')
+                                    }
+                                    onMouseLeave={(e) =>
+                                        (e.currentTarget.style.backgroundColor =
+                                            'transparent')
+                                    }
                                 >
                                     <X className="h-3 w-3" />
                                 </button>
@@ -200,10 +219,16 @@ export default function Index({ musicas, temas, autores }) {
                         <Link
                             key={musica.id}
                             href={`/musicas/${musica.id}`}
-                            className="block rounded-lg bg-white p-4 shadow-sm transition-all hover:shadow-md hover:scale-[1.01]"
+                            className="block rounded-lg bg-white p-4 shadow-sm transition-all hover:scale-[1.01] hover:shadow-md"
                         >
                             <div className="flex items-start gap-4">
-                                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg font-bold" style={{ backgroundColor: '#F5F0E8', color: '#C7AB65' }}>
+                                <div
+                                    className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg font-bold"
+                                    style={{
+                                        backgroundColor: '#F5F0E8',
+                                        color: '#C7AB65',
+                                    }}
+                                >
                                     {musica.numero}
                                 </div>
                                 <div className="min-w-0 flex-1">
@@ -240,8 +265,12 @@ export default function Index({ musicas, temas, autores }) {
                             onClick={limparFiltros}
                             className="mt-4 underline transition-colors"
                             style={{ color: '#C7AB65' }}
-                            onMouseEnter={(e) => e.currentTarget.style.color = '#B89B55'}
-                            onMouseLeave={(e) => e.currentTarget.style.color = '#C7AB65'}
+                            onMouseEnter={(e) =>
+                                (e.currentTarget.style.color = '#B89B55')
+                            }
+                            onMouseLeave={(e) =>
+                                (e.currentTarget.style.color = '#C7AB65')
+                            }
                         >
                             Limpar filtros
                         </button>
@@ -251,7 +280,7 @@ export default function Index({ musicas, temas, autores }) {
 
             {/* Modal de Filtros */}
             {modalAberto && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+                <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black p-4">
                     <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
                         {/* Header do Modal */}
                         <div className="mb-6 flex items-center justify-between">
@@ -276,16 +305,23 @@ export default function Index({ musicas, temas, autores }) {
                                 <Select
                                     value={temaSelecionado || '__all__'}
                                     onValueChange={(v) =>
-                                        setTemaSelecionado(v === '__all__' ? '' : v)
+                                        setTemaSelecionado(
+                                            v === '__all__' ? '' : v,
+                                        )
                                     }
                                 >
                                     <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Todos os temas" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="__all__">Todos os temas</SelectItem>
+                                        <SelectItem value="__all__">
+                                            Todos os temas
+                                        </SelectItem>
                                         {temas.map((tema) => (
-                                            <SelectItem key={tema.id} value={String(tema.id)}>
+                                            <SelectItem
+                                                key={tema.id}
+                                                value={String(tema.id)}
+                                            >
                                                 {tema.nome}
                                             </SelectItem>
                                         ))}
@@ -301,16 +337,23 @@ export default function Index({ musicas, temas, autores }) {
                                 <Select
                                     value={autorSelecionado || '__all__'}
                                     onValueChange={(v) =>
-                                        setAutorSelecionado(v === '__all__' ? '' : v)
+                                        setAutorSelecionado(
+                                            v === '__all__' ? '' : v,
+                                        )
                                     }
                                 >
                                     <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Todos os autores" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="__all__">Todos os autores</SelectItem>
+                                        <SelectItem value="__all__">
+                                            Todos os autores
+                                        </SelectItem>
                                         {autores.map((autor, index) => (
-                                            <SelectItem key={index} value={autor}>
+                                            <SelectItem
+                                                key={index}
+                                                value={autor}
+                                            >
                                                 {autor}
                                             </SelectItem>
                                         ))}
@@ -331,10 +374,18 @@ export default function Index({ musicas, temas, autores }) {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="numero">Número Crescente</SelectItem>
-                                        <SelectItem value="numero_desc">Número Decrescente</SelectItem>
-                                        <SelectItem value="titulo">Título (A-Z)</SelectItem>
-                                        <SelectItem value="titulo_desc">Título (Z-A)</SelectItem>
+                                        <SelectItem value="numero">
+                                            Número Crescente
+                                        </SelectItem>
+                                        <SelectItem value="numero_desc">
+                                            Número Decrescente
+                                        </SelectItem>
+                                        <SelectItem value="titulo">
+                                            Título (A-Z)
+                                        </SelectItem>
+                                        <SelectItem value="titulo_desc">
+                                            Título (Z-A)
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -352,8 +403,14 @@ export default function Index({ musicas, temas, autores }) {
                                 onClick={() => setModalAberto(false)}
                                 className="flex-1 rounded-lg px-4 py-3 font-semibold text-white shadow-lg transition-all hover:shadow-xl"
                                 style={{ backgroundColor: '#C7AB65' }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#B89B55'}
-                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#C7AB65'}
+                                onMouseEnter={(e) =>
+                                    (e.currentTarget.style.backgroundColor =
+                                        '#B89B55')
+                                }
+                                onMouseLeave={(e) =>
+                                    (e.currentTarget.style.backgroundColor =
+                                        '#C7AB65')
+                                }
                             >
                                 Aplicar
                             </button>

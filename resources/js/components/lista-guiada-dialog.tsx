@@ -4,6 +4,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { normalizarBusca } from '@/lib/utils';
 import { router } from '@inertiajs/react';
 import {
     Check,
@@ -19,7 +20,7 @@ import {
     VolumeX,
     X,
 } from 'lucide-react';
-import { useRef, useState, useMemo } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 const MOMENTOS_MISSA: { label: string; temaNome: string }[] = [
     { label: 'Entrada', temaNome: 'Entrada' },
@@ -36,9 +37,7 @@ const MOMENTOS_MISSA: { label: string; temaNome: string }[] = [
 
 const TOTAL_PASSOS = MOMENTOS_MISSA.length + 1;
 
-function normalizar(s: string) {
-    return s.toLowerCase().normalize('NFD').replace(/\p{Mn}/gu, '');
-}
+const normalizar = normalizarBusca;
 
 function formatarTempo(s: number) {
     if (!isFinite(s) || s < 0) return '0:00';
@@ -126,7 +125,7 @@ export function ListaGuiadaDialog({ aberto, onFechar, temas }: Props) {
             setAudioMusica(musica);
             setTempoAtual(0);
             setDuracao(0);
-            audioRef.current.src = `/audio/${musica.id}.mp3`;
+            audioRef.current.src = `/audio/${musica.numero}.mp3`;
             audioRef.current.play().catch(() => {
                 setAudioMusica(null);
             });
@@ -182,7 +181,9 @@ export function ListaGuiadaDialog({ aberto, onFechar, temas }: Props) {
         fecharPlayer();
         setPasso(0);
         setNome('');
-        setSelecoes(Object.fromEntries(MOMENTOS_MISSA.map((_, i) => [i, null])));
+        setSelecoes(
+            Object.fromEntries(MOMENTOS_MISSA.map((_, i) => [i, null])),
+        );
         setBusca('');
         onFechar();
     };
@@ -194,7 +195,6 @@ export function ListaGuiadaDialog({ aberto, onFechar, temas }: Props) {
     return (
         <Dialog open={aberto} onOpenChange={(open) => !open && fechar()}>
             <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col gap-0 p-0">
-
                 {/* Header */}
                 <DialogHeader className="border-b px-6 py-4">
                     <div className="flex items-center gap-2.5">
@@ -226,15 +226,19 @@ export function ListaGuiadaDialog({ aberto, onFechar, temas }: Props) {
                                     className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full"
                                     style={{ backgroundColor: '#F5F0E8' }}
                                 >
-                                    <Sparkles className="h-6 w-6" style={{ color: '#C7AB65' }} />
+                                    <Sparkles
+                                        className="h-6 w-6"
+                                        style={{ color: '#C7AB65' }}
+                                    />
                                 </div>
                                 <div>
                                     <p className="text-lg font-semibold text-gray-900">
                                         Vamos começar!
                                     </p>
                                     <p className="text-sm text-gray-500">
-                                        Dê um nome para sua lista e depois escolha
-                                        as músicas de cada momento da missa.
+                                        Dê um nome para sua lista e depois
+                                        escolha as músicas de cada momento da
+                                        missa.
                                     </p>
                                 </div>
                             </div>
@@ -246,12 +250,18 @@ export function ListaGuiadaDialog({ aberto, onFechar, temas }: Props) {
                                 value={nome}
                                 onChange={(e) => setNome(e.target.value)}
                                 onKeyDown={(e) =>
-                                    e.key === 'Enter' && nome.trim() && avancar()
+                                    e.key === 'Enter' &&
+                                    nome.trim() &&
+                                    avancar()
                                 }
                                 placeholder="Ex: Missa do Domingo"
                                 autoFocus
-                                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition-shadow focus:ring-2"
-                                style={{ '--tw-ring-color': '#C7AB65' } as React.CSSProperties}
+                                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 transition-shadow outline-none focus:ring-2"
+                                style={
+                                    {
+                                        '--tw-ring-color': '#C7AB65',
+                                    } as React.CSSProperties
+                                }
                             />
                         </div>
                     ) : (
@@ -285,7 +295,8 @@ export function ListaGuiadaDialog({ aberto, onFechar, temas }: Props) {
                                 )}
                             </div>
 
-                            {temaDoMomento && temaDoMomento.musicas.length > 0 ? (
+                            {temaDoMomento &&
+                            temaDoMomento.musicas.length > 0 ? (
                                 <>
                                     {/* Busca */}
                                     <div className="relative mb-3">
@@ -293,10 +304,17 @@ export function ListaGuiadaDialog({ aberto, onFechar, temas }: Props) {
                                         <input
                                             type="text"
                                             value={busca}
-                                            onChange={(e) => setBusca(e.target.value)}
+                                            onChange={(e) =>
+                                                setBusca(e.target.value)
+                                            }
                                             placeholder="Buscar música..."
                                             className="w-full rounded-lg border border-gray-200 py-2 pr-3 pl-9 text-sm outline-none focus:ring-2"
-                                            style={{ '--tw-ring-color': '#C7AB65' } as React.CSSProperties}
+                                            style={
+                                                {
+                                                    '--tw-ring-color':
+                                                        '#C7AB65',
+                                                } as React.CSSProperties
+                                            }
                                         />
                                     </div>
 
@@ -308,17 +326,28 @@ export function ListaGuiadaDialog({ aberto, onFechar, temas }: Props) {
                                             </p>
                                         ) : (
                                             musicasDoPasso.map((musica) => {
-                                                const selecionada = selecoes[passo - 1] === musica.id;
-                                                const estaToando = audioMusica?.id === musica.id && tocando;
+                                                const selecionada =
+                                                    selecoes[passo - 1] ===
+                                                    musica.id;
+                                                const estaToando =
+                                                    audioMusica?.id ===
+                                                        musica.id && tocando;
 
                                                 return (
                                                     <div
                                                         key={musica.id}
                                                         role="button"
                                                         tabIndex={0}
-                                                        onClick={() => selecionarMusica(musica.id)}
+                                                        onClick={() =>
+                                                            selecionarMusica(
+                                                                musica.id,
+                                                            )
+                                                        }
                                                         onKeyDown={(e) =>
-                                                            e.key === 'Enter' && selecionarMusica(musica.id)
+                                                            e.key === 'Enter' &&
+                                                            selecionarMusica(
+                                                                musica.id,
+                                                            )
                                                         }
                                                         className={`flex w-full cursor-pointer items-center gap-3 rounded-lg border p-3 text-left transition-all ${
                                                             selecionada
@@ -329,9 +358,18 @@ export function ListaGuiadaDialog({ aberto, onFechar, temas }: Props) {
                                                         {/* Badge número / check */}
                                                         <span
                                                             className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md text-sm font-bold ${
-                                                                selecionada ? 'text-white' : 'bg-gray-100 text-gray-600'
+                                                                selecionada
+                                                                    ? 'text-white'
+                                                                    : 'bg-gray-100 text-gray-600'
                                                             }`}
-                                                            style={selecionada ? { backgroundColor: '#C7AB65' } : {}}
+                                                            style={
+                                                                selecionada
+                                                                    ? {
+                                                                          backgroundColor:
+                                                                              '#C7AB65',
+                                                                      }
+                                                                    : {}
+                                                            }
                                                         >
                                                             {selecionada ? (
                                                                 <Check className="h-4 w-4" />
@@ -347,7 +385,9 @@ export function ListaGuiadaDialog({ aberto, onFechar, temas }: Props) {
                                                             </p>
                                                             {musica.autor && (
                                                                 <p className="truncate text-xs text-gray-500">
-                                                                    {musica.autor}
+                                                                    {
+                                                                        musica.autor
+                                                                    }
                                                                 </p>
                                                             )}
                                                         </div>
@@ -356,17 +396,28 @@ export function ListaGuiadaDialog({ aberto, onFechar, temas }: Props) {
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                playMusica(musica);
+                                                                playMusica(
+                                                                    musica,
+                                                                );
                                                             }}
-                                                            title={estaToando ? 'Pausar' : 'Ouvir prévia'}
+                                                            title={
+                                                                estaToando
+                                                                    ? 'Pausar'
+                                                                    : 'Ouvir prévia'
+                                                            }
                                                             className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full transition-all ${
-                                                                audioMusica?.id === musica.id
+                                                                audioMusica?.id ===
+                                                                musica.id
                                                                     ? 'text-white'
                                                                     : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                                                             }`}
                                                             style={
-                                                                audioMusica?.id === musica.id
-                                                                    ? { backgroundColor: '#C7AB65' }
+                                                                audioMusica?.id ===
+                                                                musica.id
+                                                                    ? {
+                                                                          backgroundColor:
+                                                                              '#C7AB65',
+                                                                      }
                                                                     : {}
                                                             }
                                                         >
@@ -386,7 +437,8 @@ export function ListaGuiadaDialog({ aberto, onFechar, temas }: Props) {
                                 <div className="rounded-lg border border-dashed border-gray-200 py-14 text-center">
                                     <Music2 className="mx-auto mb-3 h-10 w-10 text-gray-300" />
                                     <p className="text-sm text-gray-400">
-                                        Nenhuma música cadastrada para este momento
+                                        Nenhuma música cadastrada para este
+                                        momento
                                     </p>
                                     <p className="mt-1 text-xs text-gray-400">
                                         Você pode pular e adicionar depois
@@ -399,161 +451,185 @@ export function ListaGuiadaDialog({ aberto, onFechar, temas }: Props) {
 
                 {/* Área inferior: player + footer — nunca rola, sempre ancorada no fundo */}
                 <div className="flex-shrink-0">
+                    {/* Mini player */}
+                    <div
+                        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                            audioMusica ? 'max-h-28 border-t' : 'max-h-0'
+                        }`}
+                        style={{ backgroundColor: '#FDFAF4' }}
+                    >
+                        <div className="px-5 py-2.5">
+                            {/* Info da música */}
+                            <p className="mb-2 truncate text-sm font-medium text-gray-800">
+                                {audioMusica?.numero && (
+                                    <span
+                                        className="mr-1.5 font-bold"
+                                        style={{ color: '#C7AB65' }}
+                                    >
+                                        {audioMusica.numero}
+                                    </span>
+                                )}
+                                {audioMusica?.titulo}
+                            </p>
 
-                {/* Mini player */}
-                <div
-                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                        audioMusica ? 'max-h-28 border-t' : 'max-h-0'
-                    }`}
-                    style={{ backgroundColor: '#FDFAF4' }}
-                >
-                    <div className="px-5 py-2.5">
-                        {/* Info da música */}
-                        <p className="mb-2 truncate text-sm font-medium text-gray-800">
-                            {audioMusica?.numero && (
-                                <span className="mr-1.5 font-bold" style={{ color: '#C7AB65' }}>
-                                    {audioMusica.numero}
+                            {/* Controles */}
+                            <div className="flex items-center gap-2.5">
+                                {/* Play / Pause */}
+                                <button
+                                    onClick={() =>
+                                        audioMusica && playMusica(audioMusica)
+                                    }
+                                    className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-white transition-opacity hover:opacity-80"
+                                    style={{ backgroundColor: '#C7AB65' }}
+                                >
+                                    {tocando ? (
+                                        <Pause className="h-3.5 w-3.5" />
+                                    ) : (
+                                        <Play className="ml-0.5 h-3.5 w-3.5" />
+                                    )}
+                                </button>
+
+                                {/* Tempo atual */}
+                                <span className="w-8 flex-shrink-0 text-right text-xs text-gray-500 tabular-nums">
+                                    {formatarTempo(tempoAtual)}
+                                </span>
+
+                                {/* Scrubber */}
+                                <input
+                                    type="range"
+                                    min={0}
+                                    max={duracao || 100}
+                                    value={tempoAtual}
+                                    onChange={(e) => {
+                                        const t = Number(e.target.value);
+                                        setTempoAtual(t);
+                                        if (audioRef.current)
+                                            audioRef.current.currentTime = t;
+                                    }}
+                                    className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-gray-200"
+                                    style={{ accentColor: '#C7AB65' }}
+                                />
+
+                                {/* Duração */}
+                                <span className="w-8 flex-shrink-0 text-xs text-gray-500 tabular-nums">
+                                    {formatarTempo(duracao)}
+                                </span>
+
+                                {/* Volume */}
+                                <button
+                                    onClick={() =>
+                                        handleVolume(volume > 0 ? 0 : 1)
+                                    }
+                                    className="flex-shrink-0 text-gray-400 transition-colors hover:text-gray-600"
+                                >
+                                    {volume === 0 ? (
+                                        <VolumeX className="h-4 w-4" />
+                                    ) : (
+                                        <Volume2 className="h-4 w-4" />
+                                    )}
+                                </button>
+                                <input
+                                    type="range"
+                                    min={0}
+                                    max={1}
+                                    step={0.05}
+                                    value={volume}
+                                    onChange={(e) =>
+                                        handleVolume(Number(e.target.value))
+                                    }
+                                    className="h-1.5 w-16 cursor-pointer appearance-none rounded-full bg-gray-200"
+                                    style={{ accentColor: '#C7AB65' }}
+                                />
+
+                                {/* Fechar player */}
+                                <button
+                                    onClick={fecharPlayer}
+                                    className="flex-shrink-0 text-gray-400 transition-colors hover:text-gray-600"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Rodapé */}
+                    <div className="flex items-center justify-between border-t px-6 py-4">
+                        <button
+                            onClick={() => trocarPasso(-1)}
+                            disabled={passo === 0}
+                            className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 disabled:pointer-events-none disabled:opacity-30"
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                            Anterior
+                        </button>
+
+                        <div className="flex items-center gap-2">
+                            {totalSelecionadas > 0 && (
+                                <span className="text-xs text-gray-400">
+                                    {totalSelecionadas}{' '}
+                                    {totalSelecionadas === 1
+                                        ? 'música'
+                                        : 'músicas'}
                                 </span>
                             )}
-                            {audioMusica?.titulo}
-                        </p>
 
-                        {/* Controles */}
-                        <div className="flex items-center gap-2.5">
-                            {/* Play / Pause */}
+                            {passo > 0 && !isUltimoPasso && (
+                                <button
+                                    onClick={() => trocarPasso(1)}
+                                    className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-100"
+                                >
+                                    <SkipForward className="h-4 w-4" />
+                                    Pular
+                                </button>
+                            )}
+
                             <button
-                                onClick={() => audioMusica && playMusica(audioMusica)}
-                                className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-white transition-opacity hover:opacity-80"
+                                onClick={isUltimoPasso ? concluir : avancar}
+                                disabled={!podeAvancar || enviando}
+                                className="flex items-center gap-1.5 rounded-lg px-5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md disabled:pointer-events-none disabled:opacity-50"
                                 style={{ backgroundColor: '#C7AB65' }}
+                                onMouseEnter={(e) =>
+                                    (e.currentTarget.style.backgroundColor =
+                                        '#B89B55')
+                                }
+                                onMouseLeave={(e) =>
+                                    (e.currentTarget.style.backgroundColor =
+                                        '#C7AB65')
+                                }
                             >
-                                {tocando ? (
-                                    <Pause className="h-3.5 w-3.5" />
+                                {isUltimoPasso ? (
+                                    enviando ? (
+                                        'Criando...'
+                                    ) : (
+                                        'Concluir'
+                                    )
                                 ) : (
-                                    <Play className="ml-0.5 h-3.5 w-3.5" />
+                                    <>
+                                        Próximo
+                                        <ChevronRight className="h-4 w-4" />
+                                    </>
                                 )}
-                            </button>
-
-                            {/* Tempo atual */}
-                            <span className="w-8 flex-shrink-0 text-right text-xs tabular-nums text-gray-500">
-                                {formatarTempo(tempoAtual)}
-                            </span>
-
-                            {/* Scrubber */}
-                            <input
-                                type="range"
-                                min={0}
-                                max={duracao || 100}
-                                value={tempoAtual}
-                                onChange={(e) => {
-                                    const t = Number(e.target.value);
-                                    setTempoAtual(t);
-                                    if (audioRef.current) audioRef.current.currentTime = t;
-                                }}
-                                className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-gray-200"
-                                style={{ accentColor: '#C7AB65' }}
-                            />
-
-                            {/* Duração */}
-                            <span className="w-8 flex-shrink-0 text-xs tabular-nums text-gray-500">
-                                {formatarTempo(duracao)}
-                            </span>
-
-                            {/* Volume */}
-                            <button
-                                onClick={() => handleVolume(volume > 0 ? 0 : 1)}
-                                className="flex-shrink-0 text-gray-400 transition-colors hover:text-gray-600"
-                            >
-                                {volume === 0 ? (
-                                    <VolumeX className="h-4 w-4" />
-                                ) : (
-                                    <Volume2 className="h-4 w-4" />
-                                )}
-                            </button>
-                            <input
-                                type="range"
-                                min={0}
-                                max={1}
-                                step={0.05}
-                                value={volume}
-                                onChange={(e) => handleVolume(Number(e.target.value))}
-                                className="h-1.5 w-16 cursor-pointer appearance-none rounded-full bg-gray-200"
-                                style={{ accentColor: '#C7AB65' }}
-                            />
-
-                            {/* Fechar player */}
-                            <button
-                                onClick={fecharPlayer}
-                                className="flex-shrink-0 text-gray-400 transition-colors hover:text-gray-600"
-                            >
-                                <X className="h-4 w-4" />
                             </button>
                         </div>
                     </div>
                 </div>
-
-                {/* Rodapé */}
-                <div className="flex items-center justify-between border-t px-6 py-4">
-                    <button
-                        onClick={() => trocarPasso(-1)}
-                        disabled={passo === 0}
-                        className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 disabled:pointer-events-none disabled:opacity-30"
-                    >
-                        <ChevronLeft className="h-4 w-4" />
-                        Anterior
-                    </button>
-
-                    <div className="flex items-center gap-2">
-                        {totalSelecionadas > 0 && (
-                            <span className="text-xs text-gray-400">
-                                {totalSelecionadas}{' '}
-                                {totalSelecionadas === 1 ? 'música' : 'músicas'}
-                            </span>
-                        )}
-
-                        {passo > 0 && !isUltimoPasso && (
-                            <button
-                                onClick={() => trocarPasso(1)}
-                                className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-100"
-                            >
-                                <SkipForward className="h-4 w-4" />
-                                Pular
-                            </button>
-                        )}
-
-                        <button
-                            onClick={isUltimoPasso ? concluir : avancar}
-                            disabled={!podeAvancar || enviando}
-                            className="flex items-center gap-1.5 rounded-lg px-5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md disabled:pointer-events-none disabled:opacity-50"
-                            style={{ backgroundColor: '#C7AB65' }}
-                            onMouseEnter={(e) =>
-                                (e.currentTarget.style.backgroundColor = '#B89B55')
-                            }
-                            onMouseLeave={(e) =>
-                                (e.currentTarget.style.backgroundColor = '#C7AB65')
-                            }
-                        >
-                            {isUltimoPasso ? (
-                                enviando ? 'Criando...' : 'Concluir'
-                            ) : (
-                                <>
-                                    Próximo
-                                    <ChevronRight className="h-4 w-4" />
-                                </>
-                            )}
-                        </button>
-                    </div>
-                </div>
-
-                </div>{/* fim da área inferior */}
+                {/* fim da área inferior */}
 
                 {/* Elemento de áudio (oculto) */}
                 <audio
                     ref={audioRef}
-                    onTimeUpdate={() => setTempoAtual(audioRef.current?.currentTime ?? 0)}
-                    onLoadedMetadata={() => setDuracao(audioRef.current?.duration ?? 0)}
+                    onTimeUpdate={() =>
+                        setTempoAtual(audioRef.current?.currentTime ?? 0)
+                    }
+                    onLoadedMetadata={() =>
+                        setDuracao(audioRef.current?.duration ?? 0)
+                    }
                     onPlay={() => setTocando(true)}
                     onPause={() => setTocando(false)}
-                    onEnded={() => { setTocando(false); setTempoAtual(0); }}
+                    onEnded={() => {
+                        setTocando(false);
+                        setTempoAtual(0);
+                    }}
                 />
             </DialogContent>
         </Dialog>
