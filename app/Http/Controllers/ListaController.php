@@ -79,8 +79,13 @@ class ListaController extends Controller
             ->orderBy('numero')
             ->get();
 
+        // Indica quais músicas possuem arquivo de áudio (nomeado pelo número).
+        $todasMusicas->each(function ($m) {
+            $m->has_audio = file_exists(public_path("audio/{$m->numero}.mp3"));
+        });
+
         // Buscar temas e autores para os filtros
-        $temas = Tema::orderBy('nome')->get();
+        $temas = Tema::orderBy('ordem')->get();
         $autores = Musica::whereNotNull('autor')
             ->where('ativo', true)
             ->distinct()
