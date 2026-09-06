@@ -12,7 +12,8 @@ import {
     DndContext,
     DragEndEvent,
     KeyboardSensor,
-    PointerSensor,
+    MouseSensor,
+    TouchSensor,
     useSensor,
     useSensors,
 } from '@dnd-kit/core';
@@ -112,7 +113,7 @@ function SortableItem({
             <div
                 {...attributes}
                 {...listeners}
-                className="cursor-grab active:cursor-grabbing"
+                className="touch-none cursor-grab p-1 active:cursor-grabbing"
             >
                 <GripVertical className="h-5 w-5 text-gray-400" />
             </div>
@@ -202,7 +203,15 @@ export default function Edit({ lista, todasMusicas, temas, autores }: Props) {
     };
 
     const sensors = useSensors(
-        useSensor(PointerSensor),
+        // Mouse: arrasta ao mover 8px (evita conflito com cliques)
+        useSensor(MouseSensor, {
+            activationConstraint: { distance: 8 },
+        }),
+        // Touch (celular/iPad): pressiona e segura ~200ms para arrastar,
+        // assim o scroll normal da lista continua funcionando
+        useSensor(TouchSensor, {
+            activationConstraint: { delay: 200, tolerance: 8 },
+        }),
         useSensor(KeyboardSensor, {
             coordinateGetter: sortableKeyboardCoordinates,
         }),
