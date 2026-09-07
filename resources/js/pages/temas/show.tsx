@@ -38,9 +38,7 @@ export default function Show({ tema, musicas }: Props) {
     // Extrair lista de autores únicos
     const autores = useMemo(() => {
         const autoresSet = new Set(
-            musicas.data
-                .filter((m) => m.autor)
-                .map((m) => m.autor as string),
+            musicas.data.filter((m) => m.autor).map((m) => m.autor as string),
         );
         return Array.from(autoresSet).sort();
     }, [musicas.data]);
@@ -78,8 +76,12 @@ export default function Show({ tema, musicas }: Props) {
                         href="/temas"
                         className="inline-flex items-center transition-colors"
                         style={{ color: '#C7AB65' }}
-                        onMouseEnter={(e) => e.currentTarget.style.color = '#B89B55'}
-                        onMouseLeave={(e) => e.currentTarget.style.color = '#C7AB65'}
+                        onMouseEnter={(e) =>
+                            (e.currentTarget.style.color = '#B89B55')
+                        }
+                        onMouseLeave={(e) =>
+                            (e.currentTarget.style.color = '#C7AB65')
+                        }
                     >
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Voltar para temas
@@ -95,9 +97,7 @@ export default function Show({ tema, musicas }: Props) {
                         }}
                     >
                         <div className="flex items-center gap-4">
-                            <div
-                                className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm"
-                            >
+                            <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
                                 <FolderOpen className="h-8 w-8 text-white" />
                             </div>
                             <div className="flex-1 text-white">
@@ -127,7 +127,8 @@ export default function Show({ tema, musicas }: Props) {
                             style={{ borderColor: '#d1d5db' }}
                             onFocus={(e) => {
                                 e.currentTarget.style.borderColor = '#C7AB65';
-                                e.currentTarget.style.outline = '2px solid #C7AB65';
+                                e.currentTarget.style.outline =
+                                    '2px solid #C7AB65';
                                 e.currentTarget.style.outlineOffset = '2px';
                             }}
                             onBlur={(e) => {
@@ -148,12 +149,15 @@ export default function Show({ tema, musicas }: Props) {
                                 className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 shadow-sm transition-colors"
                                 style={{ borderColor: '#d1d5db' }}
                                 onFocus={(e) => {
-                                    e.currentTarget.style.borderColor = '#C7AB65';
-                                    e.currentTarget.style.outline = '2px solid #C7AB65';
+                                    e.currentTarget.style.borderColor =
+                                        '#C7AB65';
+                                    e.currentTarget.style.outline =
+                                        '2px solid #C7AB65';
                                     e.currentTarget.style.outlineOffset = '2px';
                                 }}
                                 onBlur={(e) => {
-                                    e.currentTarget.style.borderColor = '#d1d5db';
+                                    e.currentTarget.style.borderColor =
+                                        '#d1d5db';
                                     e.currentTarget.style.outline = 'none';
                                 }}
                             >
@@ -192,8 +196,14 @@ export default function Show({ tema, musicas }: Props) {
                                     onClick={limparFiltros}
                                     className="mt-4 underline transition-colors"
                                     style={{ color: '#C7AB65' }}
-                                    onMouseEnter={(e) => e.currentTarget.style.color = '#B89B55'}
-                                    onMouseLeave={(e) => e.currentTarget.style.color = '#C7AB65'}
+                                    onMouseEnter={(e) =>
+                                        (e.currentTarget.style.color =
+                                            '#B89B55')
+                                    }
+                                    onMouseLeave={(e) =>
+                                        (e.currentTarget.style.color =
+                                            '#C7AB65')
+                                    }
                                 >
                                     Limpar filtros
                                 </button>
@@ -243,21 +253,22 @@ export default function Show({ tema, musicas }: Props) {
                 {/* Paginação */}
                 {musicas.last_page > 1 && (
                     <div className="mt-6 flex items-center justify-center gap-2">
-                        {Array.from({ length: musicas.last_page }, (_, i) => i + 1).map(
-                            (page) => (
-                                <Link
-                                    key={page}
-                                    href={`/temas/${tema.id}?page=${page}`}
-                                    className={`rounded-lg px-4 py-2 font-medium transition-colors ${
-                                        page === musicas.current_page
-                                            ? 'bg-blue-600 text-white'
-                                            : 'bg-white text-gray-700 hover:bg-gray-100'
-                                    }`}
-                                >
-                                    {page}
-                                </Link>
-                            ),
-                        )}
+                        {Array.from(
+                            { length: musicas.last_page },
+                            (_, i) => i + 1,
+                        ).map((page) => (
+                            <Link
+                                key={page}
+                                href={`/temas/${tema.id}?page=${page}`}
+                                className={`rounded-lg px-4 py-2 font-medium transition-colors ${
+                                    page === musicas.current_page
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-white text-gray-700 hover:bg-gray-100'
+                                }`}
+                            >
+                                {page}
+                            </Link>
+                        ))}
                     </div>
                 )}
             </div>

@@ -1,8 +1,6 @@
 <?php
 
-use App\Models\Musica;
-use App\Models\Tema;
-use App\Models\User;
+use App\Models\{Musica, Tema, User};
 
 beforeEach(function () {
     $this->admin = User::factory()->create(['is_admin' => true]);
@@ -33,8 +31,8 @@ it('exibe formulário de criação de tema', function () {
 it('cria um novo tema', function () {
     $this->actingAs($this->admin)
         ->post(route('admin.temas.store'), [
-            'nome' => 'Entrada',
-            'cor' => '#FF0000',
+            'nome'  => 'Entrada',
+            'cor'   => '#FF0000',
             'ordem' => 1,
         ])
         ->assertRedirect(route('admin.temas.index'));
@@ -57,7 +55,7 @@ it('atualiza um tema', function () {
     $this->actingAs($this->admin)
         ->put(route('admin.temas.update', $tema), [
             'nome' => 'Comunhão',
-            'cor' => '#00FF00',
+            'cor'  => '#00FF00',
         ])
         ->assertRedirect(route('admin.temas.index'));
 
@@ -76,7 +74,7 @@ it('exclui um tema sem músicas', function () {
 });
 
 it('impede exclusão de tema com músicas associadas', function () {
-    $tema = Tema::factory()->create();
+    $tema   = Tema::factory()->create();
     $musica = Musica::factory()->create();
     $musica->temas()->attach($tema->id);
 

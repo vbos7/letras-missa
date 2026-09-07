@@ -3,9 +3,7 @@
 namespace App\Http\Controllers\Colaborador;
 
 use App\Http\Controllers\Controller;
-use App\Models\Musica;
-use App\Models\SolicitacaoMusica;
-use App\Models\Tema;
+use App\Models\{Musica, SolicitacaoMusica, Tema};
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -24,7 +22,7 @@ class ColaboradorMusicaController extends Controller
         }
 
         $musicas = $query->orderBy('numero')->paginate(20);
-        $temas = Tema::orderBy('ordem')->get();
+        $temas   = Tema::orderBy('ordem')->get();
 
         return Inertia::render('colaborador/musicas/index', [
             'musicas' => $musicas,
@@ -60,7 +58,7 @@ class ColaboradorMusicaController extends Controller
         ]);
 
         $validated['ativo'] = $validated['ativo'] ?? true;
-        $temaIds = $validated['tema_ids'];
+        $temaIds            = $validated['tema_ids'];
         unset($validated['tema_ids']);
 
         $musica = Musica::create($validated);

@@ -1,12 +1,9 @@
 <?php
 
-use App\Models\Lista;
-use App\Models\Musica;
-use App\Models\Tema;
-use App\Models\User;
+use App\Models\{Lista, Musica, Tema, User};
 
 it('tem relacionamento com temas', function () {
-    $tema = Tema::factory()->create();
+    $tema   = Tema::factory()->create();
     $musica = Musica::factory()->create();
     $musica->temas()->attach($tema->id);
 
@@ -16,8 +13,8 @@ it('tem relacionamento com temas', function () {
 
 it('tem relacionamento com listas', function () {
     $musica = Musica::factory()->create();
-    $user = User::factory()->create();
-    $lista = Lista::factory()->create(['user_id' => $user->id]);
+    $user   = User::factory()->create();
+    $lista  = Lista::factory()->create(['user_id' => $user->id]);
 
     $lista->musicas()->attach($musica->id, ['ordem' => 1]);
 
@@ -40,7 +37,7 @@ it('filtra por busca com scope search', function () {
 });
 
 it('filtra por tema com scope byTema', function () {
-    $tema = Tema::factory()->create();
+    $tema      = Tema::factory()->create();
     $outroTema = Tema::factory()->create();
 
     $musicasComTema = Musica::factory()->count(3)->create();

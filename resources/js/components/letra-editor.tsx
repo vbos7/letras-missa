@@ -28,9 +28,15 @@ function serializeNode(node: Node): string {
     const children = Array.from(el.childNodes).map(serializeNode).join('');
 
     if (tag === 'strong' || tag === 'b')
-        return children.split('\n').map((line) => (line ? `**${line}**` : '')).join('\n');
+        return children
+            .split('\n')
+            .map((line) => (line ? `**${line}**` : ''))
+            .join('\n');
     if (tag === 'em' || tag === 'i')
-        return children.split('\n').map((line) => (line ? `*${line}*` : '')).join('\n');
+        return children
+            .split('\n')
+            .map((line) => (line ? `*${line}*` : ''))
+            .join('\n');
     if (tag === 'br') return '\n';
     if (tag === 'div' || tag === 'p') return '\n' + children;
     return children;
@@ -154,7 +160,7 @@ export default function LetraEditor({
                     onMouseDown={handleBoldMouseDown}
                     title="Negrito (Ctrl+B)"
                     disabled={sourceMode}
-                    className="rounded px-2 py-0.5 text-sm font-bold hover:bg-accent transition-colors select-none disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="rounded px-2 py-0.5 text-sm font-bold transition-colors select-none hover:bg-accent disabled:cursor-not-allowed disabled:opacity-30"
                 >
                     N
                 </button>
@@ -163,7 +169,7 @@ export default function LetraEditor({
                     onMouseDown={handleItalicMouseDown}
                     title="Itálico (Ctrl+I)"
                     disabled={sourceMode}
-                    className="rounded px-2 py-0.5 text-sm italic hover:bg-accent transition-colors select-none disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="rounded px-2 py-0.5 text-sm italic transition-colors select-none hover:bg-accent disabled:cursor-not-allowed disabled:opacity-30"
                 >
                     I
                 </button>
@@ -176,10 +182,16 @@ export default function LetraEditor({
                 <button
                     type="button"
                     onClick={toggleSourceMode}
-                    title={sourceMode ? 'Visualização (Ctrl+Alt+V)' : 'Ver código'}
-                    className={`ml-auto rounded p-1 transition-colors hover:bg-accent ${sourceMode ? 'text-primary bg-accent' : 'text-muted-foreground'}`}
+                    title={
+                        sourceMode ? 'Visualização (Ctrl+Alt+V)' : 'Ver código'
+                    }
+                    className={`ml-auto rounded p-1 transition-colors hover:bg-accent ${sourceMode ? 'bg-accent text-primary' : 'text-muted-foreground'}`}
                 >
-                    {sourceMode ? <Eye className="h-4 w-4" /> : <Code2 className="h-4 w-4" />}
+                    {sourceMode ? (
+                        <Eye className="h-4 w-4" />
+                    ) : (
+                        <Code2 className="h-4 w-4" />
+                    )}
                 </button>
             </div>
 
@@ -192,7 +204,7 @@ export default function LetraEditor({
                         onChange(e.target.value);
                     }}
                     placeholder={placeholder}
-                    className={`w-full rounded-b-md border border-input bg-transparent px-3 py-2 font-mono text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none leading-relaxed ${error ? 'border-destructive' : ''}`}
+                    className={`w-full resize-none rounded-b-md border border-input bg-transparent px-3 py-2 font-mono text-sm leading-relaxed shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none ${error ? 'border-destructive' : ''}`}
                     style={{ minHeight: `${rows * 1.5}rem` }}
                 />
             ) : (
@@ -206,7 +218,7 @@ export default function LetraEditor({
                     onPaste={handlePaste}
                     onBlur={handleBlur}
                     data-placeholder={placeholder}
-                    className={`letra-editor-content w-full rounded-b-md border border-input bg-transparent px-3 py-2 font-mono text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring whitespace-pre-wrap leading-relaxed ${error ? 'border-destructive' : ''}`}
+                    className={`letra-editor-content w-full rounded-b-md border border-input bg-transparent px-3 py-2 font-mono text-sm leading-relaxed whitespace-pre-wrap shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none ${error ? 'border-destructive' : ''}`}
                     style={{ minHeight: `${rows * 1.5}rem` }}
                 />
             )}

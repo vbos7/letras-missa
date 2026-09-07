@@ -51,7 +51,12 @@ export default function MusicasCreate({ temas }: Props) {
     };
 
     const toggleTema = (id: number, checked: boolean) =>
-        setData('tema_ids', checked ? [...data.tema_ids, id] : data.tema_ids.filter((t) => t !== id));
+        setData(
+            'tema_ids',
+            checked
+                ? [...data.tema_ids, id]
+                : data.tema_ids.filter((t) => t !== id),
+        );
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -75,25 +80,35 @@ export default function MusicasCreate({ temas }: Props) {
                             <div className="grid grid-cols-[auto_1fr] items-start gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="numero">
-                                        Número <span className="text-destructive">*</span>
+                                        Número{' '}
+                                        <span className="text-destructive">
+                                            *
+                                        </span>
                                     </Label>
                                     <Input
                                         id="numero"
                                         type="number"
                                         value={data.numero}
-                                        onChange={(e) => setData('numero', e.target.value)}
+                                        onChange={(e) =>
+                                            setData('numero', e.target.value)
+                                        }
                                         placeholder="Ex: 001"
                                         className="w-28"
                                         autoFocus
                                     />
                                     {errors.numero && (
-                                        <p className="text-sm text-destructive">{errors.numero}</p>
+                                        <p className="text-sm text-destructive">
+                                            {errors.numero}
+                                        </p>
                                     )}
                                 </div>
 
                                 <div className="space-y-2">
                                     <Label>
-                                        Temas <span className="text-destructive">*</span>
+                                        Temas{' '}
+                                        <span className="text-destructive">
+                                            *
+                                        </span>
                                     </Label>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
@@ -102,13 +117,19 @@ export default function MusicasCreate({ temas }: Props) {
                                                 className="flex min-h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
                                             >
                                                 <span className="flex flex-wrap gap-1">
-                                                    {data.tema_ids.length === 0 ? (
+                                                    {data.tema_ids.length ===
+                                                    0 ? (
                                                         <span className="text-muted-foreground">
-                                                            Selecione os temas...
+                                                            Selecione os
+                                                            temas...
                                                         </span>
                                                     ) : (
                                                         temas
-                                                            .filter((t) => data.tema_ids.includes(t.id))
+                                                            .filter((t) =>
+                                                                data.tema_ids.includes(
+                                                                    t.id,
+                                                                ),
+                                                            )
                                                             .map((t) => (
                                                                 <span
                                                                     key={t.id}
@@ -126,21 +147,34 @@ export default function MusicasCreate({ temas }: Props) {
                                             {temas.map((tema) => (
                                                 <DropdownMenuItem
                                                     key={tema.id}
-                                                    onSelect={(e) => e.preventDefault()}
+                                                    onSelect={(e) =>
+                                                        e.preventDefault()
+                                                    }
                                                     onClick={() =>
                                                         toggleTema(
                                                             tema.id,
-                                                            !data.tema_ids.includes(tema.id),
+                                                            !data.tema_ids.includes(
+                                                                tema.id,
+                                                            ),
                                                         )
                                                     }
                                                     className="flex cursor-pointer items-center gap-2"
                                                 >
                                                     <Checkbox
-                                                        checked={data.tema_ids.includes(tema.id)}
-                                                        onCheckedChange={(checked) =>
-                                                            toggleTema(tema.id, !!checked)
+                                                        checked={data.tema_ids.includes(
+                                                            tema.id,
+                                                        )}
+                                                        onCheckedChange={(
+                                                            checked,
+                                                        ) =>
+                                                            toggleTema(
+                                                                tema.id,
+                                                                !!checked,
+                                                            )
                                                         }
-                                                        onClick={(e) => e.stopPropagation()}
+                                                        onClick={(e) =>
+                                                            e.stopPropagation()
+                                                        }
                                                     />
                                                     {tema.nome}
                                                 </DropdownMenuItem>
@@ -148,19 +182,24 @@ export default function MusicasCreate({ temas }: Props) {
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                     {errors.tema_ids && (
-                                        <p className="text-sm text-destructive">{errors.tema_ids}</p>
+                                        <p className="text-sm text-destructive">
+                                            {errors.tema_ids}
+                                        </p>
                                     )}
                                 </div>
                             </div>
 
                             <div className="space-y-2">
                                 <Label htmlFor="titulo">
-                                    Título <span className="text-destructive">*</span>
+                                    Título{' '}
+                                    <span className="text-destructive">*</span>
                                 </Label>
                                 <Input
                                     id="titulo"
                                     value={data.titulo}
-                                    onChange={(e) => setData('titulo', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('titulo', e.target.value)
+                                    }
                                     placeholder="Ex: Maria, Mãe de Deus"
                                     required
                                 />
@@ -173,7 +212,8 @@ export default function MusicasCreate({ temas }: Props) {
 
                             <div className="space-y-2">
                                 <Label htmlFor="letra">
-                                    Letra <span className="text-destructive">*</span>
+                                    Letra{' '}
+                                    <span className="text-destructive">*</span>
                                 </Label>
                                 <GuiaFormatacao />
                                 <LetraEditor
@@ -195,7 +235,9 @@ export default function MusicasCreate({ temas }: Props) {
                                     <Input
                                         id="autor"
                                         value={data.autor}
-                                        onChange={(e) => setData('autor', e.target.value)}
+                                        onChange={(e) =>
+                                            setData('autor', e.target.value)
+                                        }
                                         placeholder="Ex: João Silva"
                                     />
                                     {errors.autor && (
@@ -210,7 +252,9 @@ export default function MusicasCreate({ temas }: Props) {
                                     <Input
                                         id="tom"
                                         value={data.tom}
-                                        onChange={(e) => setData('tom', e.target.value)}
+                                        onChange={(e) =>
+                                            setData('tom', e.target.value)
+                                        }
                                         placeholder="Ex: C, G, Am"
                                     />
                                     {errors.tom && (
@@ -226,7 +270,9 @@ export default function MusicasCreate({ temas }: Props) {
                                 <Input
                                     id="tags"
                                     value={data.tags}
-                                    onChange={(e) => setData('tags', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('tags', e.target.value)
+                                    }
                                     placeholder="Ex: natal, páscoa"
                                 />
                                 {errors.tags && (
@@ -244,14 +290,19 @@ export default function MusicasCreate({ temas }: Props) {
                                         setData('ativo', checked as boolean)
                                     }
                                 />
-                                <Label htmlFor="ativo" className="cursor-pointer">
+                                <Label
+                                    htmlFor="ativo"
+                                    className="cursor-pointer"
+                                >
                                     Música ativa
                                 </Label>
                             </div>
 
                             <div className="flex gap-2 pt-4">
                                 <Button type="submit" disabled={processing}>
-                                    {processing ? 'Salvando...' : 'Salvar Música'}
+                                    {processing
+                                        ? 'Salvando...'
+                                        : 'Salvar Música'}
                                 </Button>
                                 <Button type="button" variant="outline" asChild>
                                     <Link href="/admin/musicas">Cancelar</Link>

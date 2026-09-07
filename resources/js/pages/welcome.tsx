@@ -55,8 +55,12 @@ export default function Welcome() {
                         href="/musicas"
                         className="rounded-lg px-8 py-4 font-semibold text-white shadow-lg transition-colors hover:shadow-xl"
                         style={{ backgroundColor: '#C7AB65' }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#B89B55'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#C7AB65'}
+                        onMouseEnter={(e) =>
+                            (e.currentTarget.style.backgroundColor = '#B89B55')
+                        }
+                        onMouseLeave={(e) =>
+                            (e.currentTarget.style.backgroundColor = '#C7AB65')
+                        }
                     >
                         Ver Músicas
                     </Link>
@@ -83,7 +87,10 @@ export default function Welcome() {
                         key={index}
                         className="rounded-xl bg-white p-6 shadow-md transition-shadow hover:shadow-lg"
                     >
-                        <feature.icon className="mb-4 h-12 w-12" style={{ color: '#C7AB65' }} />
+                        <feature.icon
+                            className="mb-4 h-12 w-12"
+                            style={{ color: '#C7AB65' }}
+                        />
                         <h3 className="mb-2 text-lg font-semibold text-gray-900">
                             {feature.title}
                         </h3>
@@ -93,7 +100,13 @@ export default function Welcome() {
             </div>
 
             {/* CTA Section */}
-            <div className="mt-16 rounded-2xl p-8 text-center text-white md:p-12" style={{ background: 'linear-gradient(135deg, #C7AB65 0%, #B89B55 100%)' }}>
+            <div
+                className="mt-16 rounded-2xl p-8 text-center text-white md:p-12"
+                style={{
+                    background:
+                        'linear-gradient(135deg, #C7AB65 0%, #B89B55 100%)',
+                }}
+            >
                 <h2 className="mb-4 text-3xl font-bold md:text-4xl">
                     Organize suas Missas com Facilidade
                 </h2>
@@ -117,7 +130,13 @@ export default function Welcome() {
                 </h2>
                 <div className="grid gap-8 md:grid-cols-3">
                     <div className="text-center">
-                        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full text-2xl font-bold" style={{ backgroundColor: '#F5F0E8', color: '#C7AB65' }}>
+                        <div
+                            className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full text-2xl font-bold"
+                            style={{
+                                backgroundColor: '#F5F0E8',
+                                color: '#C7AB65',
+                            }}
+                        >
                             1
                         </div>
                         <h3 className="mb-2 text-xl font-semibold">
@@ -129,7 +148,13 @@ export default function Welcome() {
                         </p>
                     </div>
                     <div className="text-center">
-                        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full text-2xl font-bold" style={{ backgroundColor: '#F5F0E8', color: '#C7AB65' }}>
+                        <div
+                            className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full text-2xl font-bold"
+                            style={{
+                                backgroundColor: '#F5F0E8',
+                                color: '#C7AB65',
+                            }}
+                        >
                             2
                         </div>
                         <h3 className="mb-2 text-xl font-semibold">
@@ -140,7 +165,13 @@ export default function Welcome() {
                         </p>
                     </div>
                     <div className="text-center">
-                        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full text-2xl font-bold" style={{ backgroundColor: '#F5F0E8', color: '#C7AB65' }}>
+                        <div
+                            className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full text-2xl font-bold"
+                            style={{
+                                backgroundColor: '#F5F0E8',
+                                color: '#C7AB65',
+                            }}
+                        >
                             3
                         </div>
                         <h3 className="mb-2 text-xl font-semibold">
@@ -162,10 +193,10 @@ export default function Welcome() {
                             Apoie Este Projeto
                         </h2>
                         <p className="mx-auto mb-6 max-w-2xl text-lg text-gray-700">
-                            Este site é totalmente gratuito e sem fins lucrativos.
-                            Se está sendo útil para você e sua comunidade,
-                            considere fazer uma doação voluntária. Qualquer valor
-                            ajuda a manter o projeto funcionando!
+                            Este site é totalmente gratuito e sem fins
+                            lucrativos. Se está sendo útil para você e sua
+                            comunidade, considere fazer uma doação voluntária.
+                            Qualquer valor ajuda a manter o projeto funcionando!
                         </p>
                         <button
                             onClick={() => setMostrarQRCode(!mostrarQRCode)}
@@ -207,8 +238,14 @@ export default function Welcome() {
                                         }}
                                         className="rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
                                         style={{ backgroundColor: '#C7AB65' }}
-                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#B89B55'}
-                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#C7AB65'}
+                                        onMouseEnter={(e) =>
+                                            (e.currentTarget.style.backgroundColor =
+                                                '#B89B55')
+                                        }
+                                        onMouseLeave={(e) =>
+                                            (e.currentTarget.style.backgroundColor =
+                                                '#C7AB65')
+                                        }
                                     >
                                         Copiar
                                     </button>

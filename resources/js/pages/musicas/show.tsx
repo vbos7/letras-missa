@@ -1,102 +1,97 @@
 import AppLayout from '@/components/app-layout';
+import { AudioPlayerBar } from '@/components/audio-player-bar';
 import LetraFormatada from '@/components/letra-formatada';
+import {
+    creditosDeMusica,
+    useAudioPlayer,
+    type AudioInfoRaw,
+    type FaixaAudio,
+} from '@/hooks/use-audio-player';
+import { esc, formatarLetraHtml, imprimirDocumento } from '@/lib/print';
+import { type SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
-import { ArrowLeft, Check, ListPlus, Music2, Pause, Play, Tag, User, Volume2, VolumeX, X } from 'lucide-react';
-import { useRef, useState } from 'react';
+import {
+    ArrowLeft,
+    Check,
+    ListPlus,
+    Music2,
+    Pause,
+    Play,
+    Tag,
+    User,
+    X,
+} from 'lucide-react';
+import { useState } from 'react';
 
-function formatarTempo(s: number) {
-    if (!isFinite(s)) return '0:00';
-    const m = Math.floor(s / 60);
-    const sec = Math.floor(s % 60);
-    return `${m}:${sec.toString().padStart(2, '0')}`;
+interface Tema {
+    id: number;
+    nome: string;
 }
 
-function esc(s: string) {
-    return (s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+interface Musica {
+    id: number;
+    numero: number;
+    titulo: string;
+    letra: string;
+    autor?: string | null;
+    tom?: string | null;
+    temas?: Tema[];
+    audio_info?: AudioInfoRaw | null;
 }
 
-function formatarLetraHtml(texto: string) {
-    if (!texto) return '';
-    return esc(texto)
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/__(.*?)__/g, '<u>$1</u>')
-        .replace(/\[(.*?)\]/g, '<span class="badge">$1</span>');
+interface ListaResumo {
+    id: number;
+    nome: string;
+    tem_musica: boolean;
 }
 
-export default function Show({ musica, listas, audioUrl }) {
-    const { auth } = usePage().props;
+export default function Show({
+    musica,
+    listas,
+    audioUrl,
+}: {
+    musica: Musica;
+    listas: ListaResumo[] | null;
+    audioUrl: string | null;
+}) {
+    const { auth } = usePage<SharedData>().props;
 
     const handlePrint = () => {
-        const win = window.open('', '_blank');
-        if (!win) return;
-
         const meta = [
             musica.autor,
             musica.tom ? `Tom: ${musica.tom}` : null,
-            musica.temas?.length > 0 ? musica.temas.map((t) => t.nome).join(', ') : null,
-        ].filter(Boolean).map(esc).join(' · ');
+            musica.temas && musica.temas.length > 0
+                ? musica.temas.map((t) => t.nome).join(', ')
+                : null,
+        ]
+            .filter((x): x is string => Boolean(x))
+            .map(esc)
+            .join(' · ');
 
-        win.document.write(`<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<title>${esc(musica.titulo)}</title>
-<style>
-  * { box-sizing: border-box; }
-  body { font-family: Georgia, serif; margin: 0; padding: 2cm; color: #000; line-height: 1.7; }
-  .header { display: flex; gap: 20px; align-items: flex-start; border-bottom: 1px solid #ddd; padding-bottom: 14px; margin-bottom: 24px; }
-  .numero { font-size: 42px; font-weight: bold; color: #ccc; line-height: 1; flex-shrink: 0; }
-  h1 { font-size: 24px; font-weight: bold; margin: 0 0 6px; }
-  .meta { font-size: 13px; color: #555; }
-  .letra { font-size: 14px; line-height: 1.85; white-space: pre-line; }
-  .badge { display: inline-block; border: 1px solid #aaa; border-radius: 4px; padding: 0 5px; font-size: 12px; font-weight: 600; margin: 2px 0; }
-  @page { margin: 2cm; size: A4; }
-</style>
-</head>
-<body>
-<div class="header">
+        imprimirDocumento(
+            musica.titulo,
+            `<div class="header">
   <div class="numero">${musica.numero}</div>
   <div>
     <h1>${esc(musica.titulo)}</h1>
     <div class="meta">${meta}</div>
   </div>
 </div>
-<div class="letra">${formatarLetraHtml(musica.letra)}</div>
-<script>window.addEventListener('load',()=>{window.print();});<\/script>
-</body>
-</html>`);
-        win.document.close();
+<div class="letra">${formatarLetraHtml(musica.letra)}</div>`,
+        );
     };
 
-    // Player de áudio
-    const audioRef = useRef<HTMLAudioElement>(null);
-    const [playerAberto, setPlayerAberto] = useState(false);
-    const [tocando, setTocando] = useState(false);
-    const [tempoAtual, setTempoAtual] = useState(0);
-    const [duracao, setDuracao] = useState(0);
-    const [volume, setVolume] = useState(1);
-
-    const togglePlay = () => {
-        if (!audioRef.current) return;
-        if (!playerAberto) setPlayerAberto(true);
-        tocando ? audioRef.current.pause() : audioRef.current.play();
-    };
-
-    const fecharPlayer = () => {
-        if (audioRef.current) {
-            audioRef.current.pause();
-            audioRef.current.currentTime = 0;
-        }
-        setPlayerAberto(false);
-        setTocando(false);
-        setTempoAtual(0);
-    };
-
-    const handleVolume = (v: number) => {
-        setVolume(v);
-        if (audioRef.current) audioRef.current.volume = v;
-    };
+    // Player de áudio (compartilhado)
+    const player = useAudioPlayer();
+    const faixaAtual: FaixaAudio | null = audioUrl
+        ? {
+              id: musica.id,
+              numero: musica.numero,
+              titulo: musica.titulo,
+              src: audioUrl,
+              info: creditosDeMusica(musica),
+          }
+        : null;
 
     const [modalAberto, setModalAberto] = useState(false);
     const [listaSelecionada, setListaSelecionada] = useState<number[]>([]);
@@ -111,13 +106,18 @@ export default function Show({ musica, listas, audioUrl }) {
         if (temMusica) return;
 
         if (listaSelecionada.includes(listaId)) {
-            setListaSelecionada(listaSelecionada.filter((id) => id !== listaId));
+            setListaSelecionada(
+                listaSelecionada.filter((id) => id !== listaId),
+            );
         } else {
             setListaSelecionada([...listaSelecionada, listaId]);
         }
     };
 
-    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    const showToast = (
+        message: string,
+        type: 'success' | 'error' = 'success',
+    ) => {
         setToast({ show: true, message, type });
         setTimeout(() => {
             setToast({ show: false, message: '', type: 'success' });
@@ -166,15 +166,19 @@ export default function Show({ musica, listas, audioUrl }) {
 
     return (
         <AppLayout>
-            <div className="mx-auto max-w-3xl">
+            <div className={`mx-auto max-w-3xl ${player.faixa ? 'pb-28' : ''}`}>
                 {/* Botão Voltar */}
                 <div className="mb-6 flex items-center justify-between">
                     <Link
                         href="/musicas"
                         className="inline-flex items-center transition-colors"
                         style={{ color: '#C7AB65' }}
-                        onMouseEnter={(e) => e.currentTarget.style.color = '#B89B55'}
-                        onMouseLeave={(e) => e.currentTarget.style.color = '#C7AB65'}
+                        onMouseEnter={(e) =>
+                            (e.currentTarget.style.color = '#B89B55')
+                        }
+                        onMouseLeave={(e) =>
+                            (e.currentTarget.style.color = '#C7AB65')
+                        }
                     >
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Voltar para o catálogo
@@ -194,26 +198,40 @@ export default function Show({ musica, listas, audioUrl }) {
                 {/* Card da Música */}
                 <div className="overflow-hidden rounded-xl bg-white shadow-lg">
                     {/* Header */}
-                    <div className="p-6 text-white" style={{ background: 'linear-gradient(135deg, #C7AB65 0%, #B89B55 100%)' }}>
+                    <div
+                        className="p-6 text-white"
+                        style={{
+                            background:
+                                'linear-gradient(135deg, #C7AB65 0%, #B89B55 100%)',
+                        }}
+                    >
                         <div className="flex items-start gap-4">
                             <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl font-bold backdrop-blur-sm">
                                 {musica.numero}
                             </div>
-                            <div className="flex-1 min-w-0">
+                            <div className="min-w-0 flex-1">
                                 {/* Título + botão play */}
                                 <div className="mb-2 flex items-start justify-between gap-3">
                                     <h1 className="text-2xl font-bold md:text-3xl">
                                         {musica.titulo}
                                     </h1>
-                                    {audioUrl && (
+                                    {faixaAtual && (
                                         <button
-                                            onClick={togglePlay}
-                                            title={tocando ? 'Pausar' : 'Tocar'}
+                                            onClick={() =>
+                                                player.tocar(faixaAtual)
+                                            }
+                                            title={
+                                                player.tocando
+                                                    ? 'Pausar'
+                                                    : 'Tocar'
+                                            }
                                             className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm transition-all hover:bg-white/35 active:scale-95"
                                         >
-                                            {tocando
-                                                ? <Pause className="h-5 w-5" />
-                                                : <Play className="ml-0.5 h-5 w-5" />}
+                                            {player.tocando ? (
+                                                <Pause className="h-5 w-5" />
+                                            ) : (
+                                                <Play className="ml-0.5 h-5 w-5" />
+                                            )}
                                         </button>
                                     )}
                                 </div>
@@ -232,101 +250,20 @@ export default function Show({ musica, listas, audioUrl }) {
                                             <span>Tom: {musica.tom}</span>
                                         </div>
                                     )}
-                                    {musica.temas?.length > 0 && (
-                                        <div className="flex items-center gap-1">
-                                            <Tag className="h-4 w-4" />
-                                            <span>{musica.temas.map((t) => t.nome).join(', ')}</span>
-                                        </div>
-                                    )}
+                                    {musica.temas &&
+                                        musica.temas.length > 0 && (
+                                            <div className="flex items-center gap-1">
+                                                <Tag className="h-4 w-4" />
+                                                <span>
+                                                    {musica.temas
+                                                        .map((t) => t.nome)
+                                                        .join(', ')}
+                                                </span>
+                                            </div>
+                                        )}
                                 </div>
-
                             </div>
                         </div>
-
-                        {/* Barra do player — ocupa toda a largura do cabeçalho */}
-                        <div
-                            className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                                playerAberto ? 'mt-4 max-h-16 opacity-100' : 'max-h-0 opacity-0'
-                            }`}
-                        >
-                            <div className="flex items-center gap-3 rounded-xl bg-white/20 px-4 py-2.5 backdrop-blur-sm">
-                                {/* Play/Pause */}
-                                <button
-                                    onClick={togglePlay}
-                                    className="flex-shrink-0 transition-opacity hover:opacity-80"
-                                >
-                                    {tocando
-                                        ? <Pause className="h-4 w-4" />
-                                        : <Play className="ml-px h-4 w-4" />}
-                                </button>
-
-                                {/* Tempo atual */}
-                                <span className="w-9 flex-shrink-0 text-right text-xs tabular-nums opacity-80">
-                                    {formatarTempo(tempoAtual)}
-                                </span>
-
-                                {/* Scrubber */}
-                                <input
-                                    type="range"
-                                    min={0}
-                                    max={duracao || 100}
-                                    value={tempoAtual}
-                                    onChange={(e) => {
-                                        const t = Number(e.target.value);
-                                        setTempoAtual(t);
-                                        if (audioRef.current) audioRef.current.currentTime = t;
-                                    }}
-                                    className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-white/40"
-                                    style={{ accentColor: 'white' }}
-                                />
-
-                                {/* Duração */}
-                                <span className="w-9 flex-shrink-0 text-xs tabular-nums opacity-80">
-                                    {formatarTempo(duracao)}
-                                </span>
-
-                                {/* Volume */}
-                                <button
-                                    onClick={() => handleVolume(volume > 0 ? 0 : 1)}
-                                    className="flex-shrink-0 transition-opacity hover:opacity-80"
-                                >
-                                    {volume === 0
-                                        ? <VolumeX className="h-4 w-4" />
-                                        : <Volume2 className="h-4 w-4" />}
-                                </button>
-                                <input
-                                    type="range"
-                                    min={0}
-                                    max={1}
-                                    step={0.05}
-                                    value={volume}
-                                    onChange={(e) => handleVolume(Number(e.target.value))}
-                                    className="h-1.5 w-20 cursor-pointer appearance-none rounded-full bg-white/40"
-                                    style={{ accentColor: 'white' }}
-                                />
-
-                                {/* Fechar */}
-                                <button
-                                    onClick={fecharPlayer}
-                                    className="flex-shrink-0 opacity-70 transition-opacity hover:opacity-100"
-                                >
-                                    <X className="h-4 w-4" />
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Elemento audio (oculto) */}
-                        {audioUrl && (
-                            <audio
-                                ref={audioRef}
-                                src={audioUrl}
-                                onTimeUpdate={() => setTempoAtual(audioRef.current?.currentTime ?? 0)}
-                                onLoadedMetadata={() => setDuracao(audioRef.current?.duration ?? 0)}
-                                onPlay={() => setTocando(true)}
-                                onPause={() => setTocando(false)}
-                                onEnded={() => { setTocando(false); setTempoAtual(0); }}
-                            />
-                        )}
                     </div>
 
                     {/* Letra */}
@@ -341,8 +278,12 @@ export default function Show({ musica, listas, audioUrl }) {
                                 href={`/musicas?tema=${musica.temas?.[0]?.id || ''}`}
                                 className="text-sm transition-colors"
                                 style={{ color: '#C7AB65' }}
-                                onMouseEnter={(e) => e.currentTarget.style.color = '#B89B55'}
-                                onMouseLeave={(e) => e.currentTarget.style.color = '#C7AB65'}
+                                onMouseEnter={(e) =>
+                                    (e.currentTarget.style.color = '#B89B55')
+                                }
+                                onMouseLeave={(e) =>
+                                    (e.currentTarget.style.color = '#C7AB65')
+                                }
                             >
                                 Ver mais músicas de{' '}
                                 {musica.temas?.[0]?.nome || 'outros temas'}
@@ -360,7 +301,7 @@ export default function Show({ musica, listas, audioUrl }) {
 
             {/* Modal Adicionar à Lista */}
             {modalAberto && auth.user && listas && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+                <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black p-4">
                     <div className="w-full max-w-md rounded-xl bg-white shadow-2xl">
                         <div className="flex items-center justify-between border-b border-gray-200 p-4">
                             <h3 className="text-lg font-bold text-gray-900">
@@ -391,15 +332,21 @@ export default function Show({ musica, listas, audioUrl }) {
                                                 ? 'cursor-not-allowed bg-gray-50 opacity-60'
                                                 : 'cursor-pointer'
                                         }`}
-                                        style={!lista.tem_musica ? { backgroundColor: 'white' } : undefined}
+                                        style={
+                                            !lista.tem_musica
+                                                ? { backgroundColor: 'white' }
+                                                : undefined
+                                        }
                                         onMouseEnter={(e) => {
                                             if (!lista.tem_musica) {
-                                                e.currentTarget.style.backgroundColor = '#F5F0E8';
+                                                e.currentTarget.style.backgroundColor =
+                                                    '#F5F0E8';
                                             }
                                         }}
                                         onMouseLeave={(e) => {
                                             if (!lista.tem_musica) {
-                                                e.currentTarget.style.backgroundColor = 'white';
+                                                e.currentTarget.style.backgroundColor =
+                                                    'white';
                                             }
                                         }}
                                     >
@@ -407,7 +354,9 @@ export default function Show({ musica, listas, audioUrl }) {
                                             type="checkbox"
                                             checked={
                                                 lista.tem_musica ||
-                                                listaSelecionada.includes(lista.id)
+                                                listaSelecionada.includes(
+                                                    lista.id,
+                                                )
                                             }
                                             onChange={() =>
                                                 handleAdicionarALista(
@@ -418,7 +367,7 @@ export default function Show({ musica, listas, audioUrl }) {
                                             disabled={lista.tem_musica}
                                             className="h-5 w-5 rounded border-gray-300 disabled:cursor-not-allowed"
                                             style={{
-                                                accentColor: '#C7AB65'
+                                                accentColor: '#C7AB65',
                                             }}
                                         />
                                         <div className="flex-1">
@@ -469,7 +418,7 @@ export default function Show({ musica, listas, audioUrl }) {
 
             {/* Toast de Notificação */}
             {toast.show && (
-                <div className="fixed top-4 right-4 z-50 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="fixed top-4 right-4 z-50 animate-in duration-300 fade-in slide-in-from-top-2">
                     <div
                         className={`rounded-lg px-6 py-4 shadow-lg ${
                             toast.type === 'success'
@@ -489,6 +438,8 @@ export default function Show({ musica, listas, audioUrl }) {
                 </div>
             )}
 
+            {/* Player fixo no rodapé (componente compartilhado) */}
+            <AudioPlayerBar player={player} variant="fixed" />
         </AppLayout>
     );
 }

@@ -38,8 +38,8 @@ class AdminTemaController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nome' => 'required|string|max:255',
-            'cor' => 'required|string|max:7',
+            'nome'  => 'required|string|max:255',
+            'cor'   => 'required|string|max:7',
             'ordem' => 'nullable|integer',
         ]);
 
@@ -72,8 +72,8 @@ class AdminTemaController extends Controller
     public function update(Request $request, Tema $tema)
     {
         $validated = $request->validate([
-            'nome' => 'required|string|max:255',
-            'cor' => 'required|string|max:7',
+            'nome'  => 'required|string|max:255',
+            'cor'   => 'required|string|max:7',
             'ordem' => 'nullable|integer',
         ]);
 

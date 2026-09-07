@@ -21,7 +21,7 @@ export default function LetraFormatada({
     };
 
     // Converte marcações simples para HTML
-    const formatarLetra = (texto) => {
+    const formatarLetra = (texto?: string) => {
         if (!texto) return '';
 
         // **texto** -> negrito

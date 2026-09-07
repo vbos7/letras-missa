@@ -1,14 +1,8 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminMusicaController;
-use App\Http\Controllers\Admin\AdminTemaController;
-use App\Http\Controllers\Admin\AudioController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\SolicitacaoController;
+use App\Http\Controllers\Admin\{AdminMusicaController, AdminTemaController, AudioController, DashboardController, SolicitacaoController};
 use App\Http\Controllers\Colaborador\ColaboradorMusicaController;
-use App\Http\Controllers\ListaController;
-use App\Http\Controllers\MusicaController;
-use App\Http\Controllers\TemaController;
+use App\Http\Controllers\{ListaController, MusicaController, TemaController};
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -78,6 +72,7 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     Route::prefix('audio')->name('audio.')->group(function () {
         Route::get('/', [AudioController::class, 'index'])->name('index');
         Route::post('/{musica}/download', [AudioController::class, 'download'])->name('download');
+        Route::put('/{musica}/creditos', [AudioController::class, 'atualizarCreditos'])->name('creditos');
         Route::delete('/{musica}', [AudioController::class, 'destroy'])->name('destroy');
     });
 
@@ -153,5 +148,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // ==========================================
 // ROTAS DE AUTENTICAÇÃO
 // ==========================================
-require __DIR__.'/auth.php';
-require __DIR__.'/settings.php';
+require __DIR__ . '/auth.php';
+
+require __DIR__ . '/settings.php';

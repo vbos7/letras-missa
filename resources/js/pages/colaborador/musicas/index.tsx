@@ -1,6 +1,3 @@
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -12,6 +9,9 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
@@ -57,7 +57,11 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Músicas', href: '/colaborador/musicas' },
 ];
 
-export default function ColaboradorMusicasIndex({ musicas, temas, filters }: Props) {
+export default function ColaboradorMusicasIndex({
+    musicas,
+    temas,
+    filters,
+}: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [temaId, setTemaId] = useState(filters.tema_id?.toString() || '');
     const isFirstRender = useRef(true);
@@ -71,7 +75,10 @@ export default function ColaboradorMusicasIndex({ musicas, temas, filters }: Pro
             const params: Record<string, string> = {};
             if (search) params.search = search;
             if (temaId) params.tema_id = temaId;
-            router.get('/colaborador/musicas', params, { preserveState: true, preserveScroll: true });
+            router.get('/colaborador/musicas', params, {
+                preserveState: true,
+                preserveScroll: true,
+            });
         }, 350);
         return () => clearTimeout(timer);
     }, [search, temaId]);
@@ -95,8 +102,9 @@ export default function ColaboradorMusicasIndex({ musicas, temas, filters }: Pro
                 </div>
 
                 <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                    Você está no painel colaborador. Novas músicas são salvas diretamente.
-                    Edições e exclusões de músicas existentes precisam de aprovação do administrador.
+                    Você está no painel colaborador. Novas músicas são salvas
+                    diretamente. Edições e exclusões de músicas existentes
+                    precisam de aprovação do administrador.
                 </div>
 
                 <Card>
@@ -120,7 +128,7 @@ export default function ColaboradorMusicasIndex({ musicas, temas, filters }: Pro
                                     id="tema"
                                     value={temaId}
                                     onChange={(e) => setTemaId(e.target.value)}
-                                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm"
+                                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none md:text-sm"
                                 >
                                     <option value="">Todos os temas</option>
                                     {temas.map((tema) => (
@@ -136,7 +144,9 @@ export default function ColaboradorMusicasIndex({ musicas, temas, filters }: Pro
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Lista de Músicas ({musicas.total} total)</CardTitle>
+                        <CardTitle>
+                            Lista de Músicas ({musicas.total} total)
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
@@ -158,63 +168,96 @@ export default function ColaboradorMusicasIndex({ musicas, temas, filters }: Pro
                                                     </div>
                                                 </div>
                                                 <div className="flex-1">
-                                                    <h3 className="font-semibold">{musica.titulo}</h3>
+                                                    <h3 className="font-semibold">
+                                                        {musica.titulo}
+                                                    </h3>
                                                     <div className="mt-1 flex flex-wrap gap-2">
-                                                        {musica.temas?.map((t) => (
-                                                            <Badge
-                                                                key={t.id}
-                                                                variant="secondary"
-                                                                style={{
-                                                                    backgroundColor: t.cor,
-                                                                    color: '#fff',
-                                                                }}
-                                                            >
-                                                                {t.nome}
-                                                            </Badge>
-                                                        ))}
+                                                        {musica.temas?.map(
+                                                            (t) => (
+                                                                <Badge
+                                                                    key={t.id}
+                                                                    variant="secondary"
+                                                                    style={{
+                                                                        backgroundColor:
+                                                                            t.cor,
+                                                                        color: '#fff',
+                                                                    }}
+                                                                >
+                                                                    {t.nome}
+                                                                </Badge>
+                                                            ),
+                                                        )}
                                                         {musica.autor && (
-                                                            <Badge variant="outline">{musica.autor}</Badge>
+                                                            <Badge variant="outline">
+                                                                {musica.autor}
+                                                            </Badge>
                                                         )}
                                                         {musica.tom && (
-                                                            <Badge variant="outline">Tom: {musica.tom}</Badge>
+                                                            <Badge variant="outline">
+                                                                Tom:{' '}
+                                                                {musica.tom}
+                                                            </Badge>
                                                         )}
                                                         {!musica.ativo && (
-                                                            <Badge variant="destructive">Inativa</Badge>
+                                                            <Badge variant="destructive">
+                                                                Inativa
+                                                            </Badge>
                                                         )}
                                                     </div>
                                                 </div>
                                             </div>
                                             <div className="flex gap-2">
-                                                <Button variant="outline" size="sm" asChild>
-                                                    <Link href={`/colaborador/musicas/${musica.id}/edit`}>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    asChild
+                                                >
+                                                    <Link
+                                                        href={`/colaborador/musicas/${musica.id}/edit`}
+                                                    >
                                                         <Edit className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
                                                 <AlertDialog>
                                                     <AlertDialogTrigger asChild>
-                                                        <Button variant="outline" size="sm">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                        >
                                                             <SendHorizonal className="h-4 w-4" />
                                                         </Button>
                                                     </AlertDialogTrigger>
                                                     <AlertDialogContent>
                                                         <AlertDialogHeader>
                                                             <AlertDialogTitle>
-                                                                Solicitar exclusão
+                                                                Solicitar
+                                                                exclusão
                                                             </AlertDialogTitle>
                                                             <AlertDialogDescription>
-                                                                Deseja enviar uma solicitação de exclusão
-                                                                para "{musica.titulo}"? O administrador
-                                                                precisará aprovar antes de ser excluída.
+                                                                Deseja enviar
+                                                                uma solicitação
+                                                                de exclusão para
+                                                                "{musica.titulo}
+                                                                "? O
+                                                                administrador
+                                                                precisará
+                                                                aprovar antes de
+                                                                ser excluída.
                                                             </AlertDialogDescription>
                                                         </AlertDialogHeader>
                                                         <AlertDialogFooter>
-                                                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                                            <AlertDialogCancel>
+                                                                Cancelar
+                                                            </AlertDialogCancel>
                                                             <AlertDialogAction
                                                                 onClick={() =>
-                                                                    handleSolicitarExclusao(musica.id)
+                                                                    handleSolicitarExclusao(
+                                                                        musica.id,
+                                                                    )
                                                                 }
                                                             >
-                                                                Enviar solicitação
+                                                                Enviar
+                                                                solicitação
                                                             </AlertDialogAction>
                                                         </AlertDialogFooter>
                                                     </AlertDialogContent>
@@ -234,7 +277,9 @@ export default function ColaboradorMusicasIndex({ musicas, temas, filters }: Pro
                                         <Button
                                             key={page}
                                             variant={
-                                                page === musicas.current_page ? 'default' : 'outline'
+                                                page === musicas.current_page
+                                                    ? 'default'
+                                                    : 'outline'
                                             }
                                             size="sm"
                                             onClick={() =>

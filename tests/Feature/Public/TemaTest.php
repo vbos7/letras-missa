@@ -1,7 +1,6 @@
 <?php
 
-use App\Models\Musica;
-use App\Models\Tema;
+use App\Models\{Musica, Tema};
 
 it('exibe a lista de temas', function () {
     Tema::factory()->count(3)->create();

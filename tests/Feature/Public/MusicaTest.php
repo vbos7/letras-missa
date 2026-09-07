@@ -1,7 +1,6 @@
 <?php
 
-use App\Models\Musica;
-use App\Models\Tema;
+use App\Models\{Musica, Tema};
 
 it('exibe o catálogo de músicas', function () {
     Tema::factory()->create();

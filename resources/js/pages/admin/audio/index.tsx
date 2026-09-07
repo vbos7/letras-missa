@@ -13,6 +13,13 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -28,8 +35,19 @@ import { Spinner } from '@/components/ui/spinner';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
-import { AlertTriangle, Download, Trash2 } from 'lucide-react';
+import { AlertTriangle, Download, Info, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+
+interface AudioInfo {
+    artista: string | null;
+    compositor: string | null;
+    album: string | null;
+    gravadora: string | null;
+    distribuidora: string | null;
+    data_lancamento: string | null;
+    fonte_url: string | null;
+    descricao: string | null;
+}
 
 interface Musica {
     id: number;
@@ -37,7 +55,19 @@ interface Musica {
     titulo: string;
     autor: string | null;
     has_audio: boolean;
+    audio_info: AudioInfo | null;
 }
+
+type CreditosForm = {
+    artista: string;
+    compositor: string;
+    album: string;
+    gravadora: string;
+    distribuidora: string;
+    data_lancamento: string;
+    fonte_url: string;
+    descricao: string;
+};
 
 interface PaginatedMusicas {
     data: Musica[];
@@ -78,6 +108,45 @@ export default function AudioIndex({
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
     const isFirstRender = useRef(true);
+
+    // Edição de créditos do áudio
+    const [creditoMusica, setCreditoMusica] = useState<Musica | null>(null);
+    const [creditoForm, setCreditoForm] = useState<CreditosForm>({
+        artista: '',
+        compositor: '',
+        album: '',
+        gravadora: '',
+        distribuidora: '',
+        data_lancamento: '',
+        fonte_url: '',
+        descricao: '',
+    });
+    const [salvandoCreditos, setSalvandoCreditos] = useState(false);
+
+    const abrirCreditos = (musica: Musica) => {
+        setCreditoMusica(musica);
+        const info = musica.audio_info;
+        setCreditoForm({
+            artista: info?.artista ?? '',
+            compositor: info?.compositor ?? '',
+            album: info?.album ?? '',
+            gravadora: info?.gravadora ?? '',
+            distribuidora: info?.distribuidora ?? '',
+            data_lancamento: info?.data_lancamento ?? '',
+            fonte_url: info?.fonte_url ?? '',
+            descricao: info?.descricao ?? '',
+        });
+    };
+
+    const salvarCreditos = () => {
+        if (!creditoMusica) return;
+        setSalvandoCreditos(true);
+        router.put(`/admin/audio/${creditoMusica.id}/creditos`, creditoForm, {
+            preserveScroll: true,
+            onSuccess: () => setCreditoMusica(null),
+            onFinish: () => setSalvandoCreditos(false),
+        });
+    };
 
     const dependenciasFaltando = !ytdlpInstalled || !ffmpegInstalled;
 
@@ -288,6 +357,25 @@ export default function AudioIndex({
                                         </Button>
 
                                         {musica.has_audio && (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() =>
+                                                    abrirCreditos(musica)
+                                                }
+                                                title="Créditos do áudio"
+                                            >
+                                                <Info className="mr-1.5 h-4 w-4" />
+                                                Créditos
+                                                {musica.audio_info?.album ||
+                                                musica.audio_info?.artista ||
+                                                musica.audio_info?.gravadora ? (
+                                                    <span className="ml-1.5 h-2 w-2 rounded-full bg-green-500" />
+                                                ) : null}
+                                            </Button>
+                                        )}
+
+                                        {musica.has_audio && (
                                             <AlertDialog>
                                                 <AlertDialogTrigger asChild>
                                                     <Button
@@ -437,6 +525,184 @@ export default function AudioIndex({
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Dialog de créditos do áudio */}
+            <Dialog
+                open={creditoMusica !== null}
+                onOpenChange={(open) => !open && setCreditoMusica(null)}
+            >
+                <DialogContent className="max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle>
+                            Créditos do áudio
+                            {creditoMusica && (
+                                <span className="ml-1 font-normal text-muted-foreground">
+                                    — #{creditoMusica.numero}{' '}
+                                    {creditoMusica.titulo}
+                                </span>
+                            )}
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <div className="max-h-[65vh] space-y-3 overflow-y-auto pr-1">
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                                <Label htmlFor="c_artista">
+                                    Artista / Intérprete
+                                </Label>
+                                <Input
+                                    id="c_artista"
+                                    value={creditoForm.artista}
+                                    onChange={(e) =>
+                                        setCreditoForm((f) => ({
+                                            ...f,
+                                            artista: e.target.value,
+                                        }))
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="c_compositor">Compositor</Label>
+                                <Input
+                                    id="c_compositor"
+                                    value={creditoForm.compositor}
+                                    onChange={(e) =>
+                                        setCreditoForm((f) => ({
+                                            ...f,
+                                            compositor: e.target.value,
+                                        }))
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="c_album">Álbum</Label>
+                                <Input
+                                    id="c_album"
+                                    value={creditoForm.album}
+                                    onChange={(e) =>
+                                        setCreditoForm((f) => ({
+                                            ...f,
+                                            album: e.target.value,
+                                        }))
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="c_gravadora">
+                                    Gravadora (℗)
+                                </Label>
+                                <Input
+                                    id="c_gravadora"
+                                    placeholder="Ex.: Edições Shalom"
+                                    value={creditoForm.gravadora}
+                                    onChange={(e) =>
+                                        setCreditoForm((f) => ({
+                                            ...f,
+                                            gravadora: e.target.value,
+                                        }))
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="c_distribuidora">
+                                    Distribuidora
+                                </Label>
+                                <Input
+                                    id="c_distribuidora"
+                                    placeholder="Ex.: ONErpm"
+                                    value={creditoForm.distribuidora}
+                                    onChange={(e) =>
+                                        setCreditoForm((f) => ({
+                                            ...f,
+                                            distribuidora: e.target.value,
+                                        }))
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="c_lancamento">
+                                    Data de lançamento
+                                </Label>
+                                <Input
+                                    id="c_lancamento"
+                                    placeholder="Ex.: 2021-04-16"
+                                    value={creditoForm.data_lancamento}
+                                    onChange={(e) =>
+                                        setCreditoForm((f) => ({
+                                            ...f,
+                                            data_lancamento: e.target.value,
+                                        }))
+                                    }
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <Label htmlFor="c_fonte">
+                                Link da fonte (YouTube, etc.)
+                            </Label>
+                            <Input
+                                id="c_fonte"
+                                type="url"
+                                placeholder="https://youtube.com/watch?v=..."
+                                value={creditoForm.fonte_url}
+                                onChange={(e) =>
+                                    setCreditoForm((f) => ({
+                                        ...f,
+                                        fonte_url: e.target.value,
+                                    }))
+                                }
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <Label htmlFor="c_descricao">
+                                Descrição completa (respaldo)
+                            </Label>
+                            <textarea
+                                id="c_descricao"
+                                rows={6}
+                                placeholder="Cole aqui a descrição completa do YouTube (Provided to YouTube by..., ℗..., Released on..., Auto-generated by YouTube.)"
+                                value={creditoForm.descricao}
+                                onChange={(e) =>
+                                    setCreditoForm((f) => ({
+                                        ...f,
+                                        descricao: e.target.value,
+                                    }))
+                                }
+                                className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                Dica: cole o texto inteiro da descrição do
+                                YouTube para ter o registro verbatim dos
+                                créditos.
+                            </p>
+                        </div>
+                    </div>
+
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setCreditoMusica(null)}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            onClick={salvarCreditos}
+                            disabled={salvandoCreditos}
+                        >
+                            {salvandoCreditos ? (
+                                <>
+                                    <Spinner className="mr-1.5" />
+                                    Salvando...
+                                </>
+                            ) : (
+                                'Salvar créditos'
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 }

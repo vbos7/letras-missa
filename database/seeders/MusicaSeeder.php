@@ -2,8 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Musica;
-use App\Models\Tema;
+use App\Models\{Musica, Tema};
 use Illuminate\Database\Seeder;
 
 class MusicaSeeder extends Seeder
@@ -131,6 +130,7 @@ class MusicaSeeder extends Seeder
                 $item['data']
             );
             $temaIds = array_filter($item['temas']);
+
             if ($temaIds) {
                 $musica->temas()->syncWithoutDetaching($temaIds);
             }

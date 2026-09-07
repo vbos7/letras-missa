@@ -1,7 +1,6 @@
 <?php
 
-use App\Models\Lista;
-use App\Models\User;
+use App\Models\{Lista, User};
 
 it('redireciona guest para login ao acessar listas', function () {
     $this->get(route('listas.index'))->assertRedirect(route('login'));
@@ -45,14 +44,14 @@ it('cria uma nova lista', function () {
 
     $this->actingAs($user)
         ->post(route('listas.store'), [
-            'nome' => 'Missa Domingo',
+            'nome'    => 'Missa Domingo',
             'publica' => true,
         ])
         ->assertRedirect();
 
     $this->assertDatabaseHas('listas', [
         'user_id' => $user->id,
-        'nome' => 'Missa Domingo',
+        'nome'    => 'Missa Domingo',
     ]);
 });
 
@@ -67,7 +66,7 @@ it('valida nome obrigatório ao criar lista', function () {
 });
 
 it('exibe o formulário de edição da lista', function () {
-    $user = User::factory()->create();
+    $user  = User::factory()->create();
     $lista = Lista::factory()->create(['user_id' => $user->id]);
 
     $this->actingAs($user)
@@ -76,12 +75,12 @@ it('exibe o formulário de edição da lista', function () {
 });
 
 it('atualiza uma lista', function () {
-    $user = User::factory()->create();
+    $user  = User::factory()->create();
     $lista = Lista::factory()->create(['user_id' => $user->id]);
 
     $this->actingAs($user)
         ->put(route('listas.update', $lista), [
-            'nome' => 'Nome Atualizado',
+            'nome'    => 'Nome Atualizado',
             'publica' => false,
         ])
         ->assertRedirect();
@@ -91,7 +90,7 @@ it('atualiza uma lista', function () {
 });
 
 it('exclui uma lista', function () {
-    $user = User::factory()->create();
+    $user  = User::factory()->create();
     $lista = Lista::factory()->create(['user_id' => $user->id]);
 
     $this->actingAs($user)
@@ -102,9 +101,9 @@ it('exclui uma lista', function () {
 });
 
 it('impede edição de lista de outro usuário', function () {
-    $user = User::factory()->create();
+    $user      = User::factory()->create();
     $outroUser = User::factory()->create();
-    $lista = Lista::factory()->create(['user_id' => $outroUser->id]);
+    $lista     = Lista::factory()->create(['user_id' => $outroUser->id]);
 
     $this->actingAs($user)
         ->get(route('listas.edit', $lista))
@@ -112,9 +111,9 @@ it('impede edição de lista de outro usuário', function () {
 });
 
 it('impede exclusão de lista de outro usuário', function () {
-    $user = User::factory()->create();
+    $user      = User::factory()->create();
     $outroUser = User::factory()->create();
-    $lista = Lista::factory()->create(['user_id' => $outroUser->id]);
+    $lista     = Lista::factory()->create(['user_id' => $outroUser->id]);
 
     $this->actingAs($user)
         ->delete(route('listas.destroy', $lista))

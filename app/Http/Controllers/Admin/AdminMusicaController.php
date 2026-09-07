@@ -3,8 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Musica;
-use App\Models\Tema;
+use App\Models\{Musica, Tema};
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -26,13 +25,13 @@ class AdminMusicaController extends Controller
         }
 
         $musicas = $query->orderBy('numero')->paginate(20);
-        $temas = Tema::orderBy('ordem')->get();
+        $temas   = Tema::orderBy('ordem')->get();
 
         return Inertia::render('admin/musicas/index', [
             'musicas' => $musicas,
-            'temas' => $temas,
+            'temas'   => $temas,
             'filters' => [
-                'search' => $request->search,
+                'search'  => $request->search,
                 'tema_id' => $request->tema_id,
             ],
         ]);
@@ -56,19 +55,19 @@ class AdminMusicaController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'numero'    => 'required|integer|unique:musicas,numero',
-            'titulo'    => 'required|string|max:255',
-            'letra'     => 'required|string',
-            'autor'     => 'nullable|string|max:255',
-            'tom'       => 'nullable|string|max:10',
-            'tema_ids'  => 'required|array|min:1',
+            'numero'     => 'required|integer|unique:musicas,numero',
+            'titulo'     => 'required|string|max:255',
+            'letra'      => 'required|string',
+            'autor'      => 'nullable|string|max:255',
+            'tom'        => 'nullable|string|max:10',
+            'tema_ids'   => 'required|array|min:1',
             'tema_ids.*' => 'exists:temas,id',
-            'tags'      => 'nullable|string',
-            'ativo'     => 'sometimes|boolean',
+            'tags'       => 'nullable|string',
+            'ativo'      => 'sometimes|boolean',
         ]);
 
         $validated['ativo'] = $validated['ativo'] ?? true;
-        $temaIds = $validated['tema_ids'];
+        $temaIds            = $validated['tema_ids'];
         unset($validated['tema_ids']);
 
         $musica = Musica::create($validated);

@@ -58,12 +58,15 @@ export default function TemasEdit({ tema }: Props) {
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="nome">
-                                    Nome <span className="text-destructive">*</span>
+                                    Nome{' '}
+                                    <span className="text-destructive">*</span>
                                 </Label>
                                 <Input
                                     id="nome"
                                     value={data.nome}
-                                    onChange={(e) => setData('nome', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('nome', e.target.value)
+                                    }
                                     placeholder="Ex: Entrada"
                                     autoFocus
                                 />
@@ -76,26 +79,33 @@ export default function TemasEdit({ tema }: Props) {
 
                             <div className="space-y-2">
                                 <Label htmlFor="cor">
-                                    Cor <span className="text-destructive">*</span>
+                                    Cor{' '}
+                                    <span className="text-destructive">*</span>
                                 </Label>
-                                <div className="flex gap-2 items-center">
+                                <div className="flex items-center gap-2">
                                     <Input
                                         id="cor"
                                         type="color"
                                         value={data.cor}
-                                        onChange={(e) => setData('cor', e.target.value)}
-                                        className="w-20 h-10"
+                                        onChange={(e) =>
+                                            setData('cor', e.target.value)
+                                        }
+                                        className="h-10 w-20"
                                     />
                                     <Input
                                         type="text"
                                         value={data.cor}
-                                        onChange={(e) => setData('cor', e.target.value)}
+                                        onChange={(e) =>
+                                            setData('cor', e.target.value)
+                                        }
                                         placeholder="#3B82F6"
                                         className="flex-1"
                                     />
                                 </div>
                                 {errors.cor && (
-                                    <p className="text-sm text-destructive">{errors.cor}</p>
+                                    <p className="text-sm text-destructive">
+                                        {errors.cor}
+                                    </p>
                                 )}
                             </div>
 
@@ -105,7 +115,9 @@ export default function TemasEdit({ tema }: Props) {
                                     id="ordem"
                                     type="number"
                                     value={data.ordem}
-                                    onChange={(e) => setData('ordem', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('ordem', e.target.value)
+                                    }
                                 />
                                 {errors.ordem && (
                                     <p className="text-sm text-destructive">
@@ -116,7 +128,9 @@ export default function TemasEdit({ tema }: Props) {
 
                             <div className="flex gap-2 pt-4">
                                 <Button type="submit" disabled={processing}>
-                                    {processing ? 'Salvando...' : 'Atualizar Tema'}
+                                    {processing
+                                        ? 'Salvando...'
+                                        : 'Atualizar Tema'}
                                 </Button>
                                 <Button type="button" variant="outline" asChild>
                                     <Link href="/admin/temas">Cancelar</Link>

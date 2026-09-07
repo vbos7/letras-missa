@@ -21,7 +21,7 @@ class EnsureUserIsAdmin
             if ($request->expectsJson() || $request->header('X-Inertia')) {
                 abort(403, 'Você não tem permissão de administrador.');
             }
-            
+
             // Se for navegação normal, redireciona
             return redirect('/')->with('error', 'Acesso negado.');
         }

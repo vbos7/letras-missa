@@ -2,11 +2,9 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\{DB, Schema};
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * Run the migrations.
      */
@@ -19,6 +17,7 @@ return new class extends Migration
             $table->text('letra');
             $table->string('autor')->nullable();
             $table->string('tom')->nullable(); // Tom musical (ex: G, C, D)
+
             // No SQLite (testes), não criamos FK pois complica o drop da coluna depois
             if (DB::connection()->getDriverName() !== 'sqlite') {
                 $table->foreignId('tema_id')->nullable()->constrained('temas')->nullOnDelete();

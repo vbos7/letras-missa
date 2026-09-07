@@ -41,16 +41,16 @@ class HandleInertiaRequests extends Middleware
 
         return [
             ...parent::share($request),
-            'name' => config('app.name'),
+            'name'  => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
-            'auth' => [
+            'auth'  => [
                 'user' => $request->user(),
             ],
             'solicitacoes_pendentes' => $request->user()?->is_admin
                 ? SolicitacaoMusica::where('status', 'pendente')->count()
                 : 0,
-            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-            'toast' => $this->getFlashMessage($request),
+            'sidebarOpen' => !$request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'toast'       => $this->getFlashMessage($request),
         ];
     }
 
@@ -61,28 +61,28 @@ class HandleInertiaRequests extends Middleware
     {
         if ($request->session()->has('success')) {
             return [
-                'type' => 'success',
+                'type'    => 'success',
                 'message' => $request->session()->get('success'),
             ];
         }
 
         if ($request->session()->has('error')) {
             return [
-                'type' => 'error',
+                'type'    => 'error',
                 'message' => $request->session()->get('error'),
             ];
         }
 
         if ($request->session()->has('warning')) {
             return [
-                'type' => 'warning',
+                'type'    => 'warning',
                 'message' => $request->session()->get('warning'),
             ];
         }
 
         if ($request->session()->has('info')) {
             return [
-                'type' => 'info',
+                'type'    => 'info',
                 'message' => $request->session()->get('info'),
             ];
         }

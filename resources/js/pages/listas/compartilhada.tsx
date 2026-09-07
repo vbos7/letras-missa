@@ -1,5 +1,12 @@
 import AppLayout from '@/components/app-layout';
+import { AudioPlayerBar } from '@/components/audio-player-bar';
 import LetraFormatada from '@/components/letra-formatada';
+import {
+    creditosDeMusica,
+    useAudioPlayer,
+    type AudioInfoRaw,
+} from '@/hooks/use-audio-player';
+import { esc, formatarLetraHtml, imprimirDocumento } from '@/lib/print';
 import {
     Calendar,
     ChevronDown,
@@ -11,97 +18,47 @@ import {
     Play,
     Printer,
     User,
-    Volume2,
-    VolumeX,
-    X,
 } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 
-function esc(s: string) {
-    return (s ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
+interface Musica {
+    id: number;
+    numero: number;
+    titulo: string;
+    letra: string;
+    autor?: string | null;
+    tom?: string | null;
+    tema?: { nome: string } | null;
+    pivot?: { observacao?: string | null };
+    has_audio?: boolean;
+    audio_info?: AudioInfoRaw | null;
 }
 
-function formatarTempo(s: number) {
-    if (!isFinite(s) || s < 0) return '0:00';
-    const m = Math.floor(s / 60);
-    const sec = Math.floor(s % 60);
-    return `${m}:${sec.toString().padStart(2, '0')}`;
+interface Lista {
+    nome: string;
+    descricao?: string | null;
+    data_missa?: string | null;
+    horario_missa?: string | null;
+    local?: string | null;
+    user: { name: string };
+    musicas: Musica[];
 }
 
-function formatarLetraHtml(texto: string) {
-    if (!texto) return '';
-    return esc(texto)
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/__(.*?)__/g, '<u>$1</u>')
-        .replace(/\[(.*?)]/g, '<span class="badge">$1</span>');
-}
+export default function Compartilhada({ lista }: { lista: Lista }) {
+    const [musicaExpandida, setMusicaExpandida] = useState<number | null>(null);
 
-export default function Compartilhada({ lista }) {
-    const [musicaExpandida, setMusicaExpandida] = useState(null);
-
-    // Player de áudio (fixo no rodapé)
-    const audioRef = useRef<HTMLAudioElement>(null);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [audioMusica, setAudioMusica] = useState<any>(null);
-    const [tocando, setTocando] = useState(false);
-    const [tempoAtual, setTempoAtual] = useState(0);
-    const [duracao, setDuracao] = useState(0);
-    const [volume, setVolume] = useState(1);
-
-    const playMusica = (musica) => {
-        if (!audioRef.current) return;
-
-        if (audioMusica?.id === musica.id) {
-            // Mesma música: alterna play/pause
-            if (tocando) {
-                audioRef.current.pause();
-            } else {
-                audioRef.current.play();
-            }
-        } else {
-            // Nova música
-            setAudioMusica(musica);
-            setTempoAtual(0);
-            setDuracao(0);
-            audioRef.current.src = `/audio/${musica.numero}.mp3`;
-            audioRef.current.play().catch(() => {
-                setAudioMusica(null);
-            });
-        }
-    };
-
-    const fecharPlayer = () => {
-        if (audioRef.current) {
-            audioRef.current.pause();
-            audioRef.current.src = '';
-        }
-        setAudioMusica(null);
-        setTocando(false);
-        setTempoAtual(0);
-        setDuracao(0);
-    };
-
-    const handleVolume = (v: number) => {
-        setVolume(v);
-        if (audioRef.current) audioRef.current.volume = v;
-    };
+    // Player de áudio (componente compartilhado)
+    const player = useAudioPlayer();
 
     const handlePrintLista = () => {
-        const win = window.open('', '_blank');
-        if (!win) return;
-
-        const musicasHtml = lista.musicas
-            .map((musica, i) => {
+        const corpo = lista.musicas
+            .map((musica: Musica, i: number) => {
                 const isLast = i === lista.musicas.length - 1;
                 const meta = [
                     musica.autor,
                     musica.tom ? `Tom: ${musica.tom}` : null,
                 ]
-                    .filter(Boolean)
+                    .filter((x): x is string => Boolean(x))
                     .map(esc)
                     .join(' · ');
                 const obs = musica.pivot?.observacao
@@ -111,7 +68,7 @@ export default function Compartilhada({ lista }) {
   <div style="display:flex;gap:18px;align-items:flex-start;border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:22px">
     <span style="font-size:38px;font-weight:bold;color:#ccc;line-height:1;flex-shrink:0">${musica.numero}</span>
     <div>
-      <h2 style="font-size:21px;font-weight:bold;margin:0 0 5px">${esc(musica.titulo)}</h2>
+      <h2 style="margin:0 0 5px">${esc(musica.titulo)}</h2>
       <p style="font-size:13px;color:#555;margin:0">${meta}</p>
     </div>
   </div>
@@ -121,33 +78,16 @@ export default function Compartilhada({ lista }) {
             })
             .join('\n');
 
-        win.document.write(`<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<title>${esc(lista.nome)}</title>
-<style>
-  * { box-sizing: border-box; }
-  body { font-family: Georgia, serif; margin: 0; padding: 2cm; color: #000; line-height: 1.7; }
-  .badge { display: inline-block; border: 1px solid #aaa; border-radius: 4px; padding: 0 5px; font-size: 12px; font-weight: 600; margin: 2px 0; }
-  @page { margin: 2cm; size: A4; }
-</style>
-</head>
-<body>
-${musicasHtml}
-<script>window.addEventListener('load',()=>{window.print();});</script>
-</body>
-</html>`);
-        win.document.close();
+        imprimirDocumento(lista.nome, corpo);
     };
 
-    const toggleMusica = (musicaId) => {
+    const toggleMusica = (musicaId: number) => {
         setMusicaExpandida(musicaExpandida === musicaId ? null : musicaId);
     };
 
     return (
         <AppLayout>
-            <div className={`mx-auto max-w-3xl ${audioMusica ? 'pb-28' : ''}`}>
+            <div className={`mx-auto max-w-3xl ${player.faixa ? 'pb-28' : ''}`}>
                 {/* Header da Lista */}
                 <div
                     className="mb-6 rounded-xl p-6 text-white shadow-lg md:p-8"
@@ -223,116 +163,126 @@ ${musicasHtml}
 
                 {/* Lista de Músicas */}
                 <div className="space-y-3">
-                    {lista.musicas.map((musica) => (
-                        <div
-                            key={musica.id}
-                            className="overflow-hidden rounded-lg bg-white shadow-sm"
-                        >
-                            {/* Header da Música */}
-                            <button
-                                onClick={() => toggleMusica(musica.id)}
-                                className="flex w-full items-center gap-4 p-4 transition-colors hover:bg-gray-50"
+                    {lista.musicas.map((musica: Musica) => {
+                        const faixa = {
+                            id: musica.id,
+                            numero: musica.numero,
+                            titulo: musica.titulo,
+                            src: `/audio/${musica.numero}.mp3`,
+                            info: creditosDeMusica(musica),
+                        };
+                        const noPlayer = player.eAtual(faixa);
+
+                        return (
+                            <div
+                                key={musica.id}
+                                className="overflow-hidden rounded-lg bg-white shadow-sm"
                             >
-                                <div
-                                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg font-bold"
-                                    style={{
-                                        backgroundColor: '#F5F0E8',
-                                        color: '#C7AB65',
-                                    }}
+                                {/* Header da Música */}
+                                <button
+                                    onClick={() => toggleMusica(musica.id)}
+                                    className="flex w-full items-center gap-4 p-4 transition-colors hover:bg-gray-50"
                                 >
-                                    {musica.numero}
-                                </div>
-                                <div className="min-w-0 flex-1 text-left">
-                                    <h3 className="mb-1 font-semibold text-gray-900">
-                                        {musica.titulo}
-                                    </h3>
-                                    <div className="flex flex-wrap gap-2 text-xs">
-                                        {musica.tema && (
-                                            <span
-                                                className="rounded-full px-2 py-1"
-                                                style={{
-                                                    backgroundColor: '#F5F0E8',
-                                                    color: '#8B7A45',
-                                                }}
-                                            >
-                                                {musica.tema.nome}
-                                            </span>
-                                        )}
-                                        {musica.autor && (
-                                            <span className="text-gray-500">
-                                                {musica.autor}
-                                            </span>
-                                        )}
-                                        {musica.tom && (
-                                            <span className="rounded-full bg-gray-100 px-2 py-1 text-gray-700">
-                                                {musica.tom}
-                                            </span>
+                                    <div
+                                        className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg font-bold"
+                                        style={{
+                                            backgroundColor: '#F5F0E8',
+                                            color: '#C7AB65',
+                                        }}
+                                    >
+                                        {musica.numero}
+                                    </div>
+                                    <div className="min-w-0 flex-1 text-left">
+                                        <h3 className="mb-1 font-semibold text-gray-900">
+                                            {musica.titulo}
+                                        </h3>
+                                        <div className="flex flex-wrap gap-2 text-xs">
+                                            {musica.tema && (
+                                                <span
+                                                    className="rounded-full px-2 py-1"
+                                                    style={{
+                                                        backgroundColor:
+                                                            '#F5F0E8',
+                                                        color: '#8B7A45',
+                                                    }}
+                                                >
+                                                    {musica.tema.nome}
+                                                </span>
+                                            )}
+                                            {musica.autor && (
+                                                <span className="text-gray-500">
+                                                    {musica.autor}
+                                                </span>
+                                            )}
+                                            {musica.tom && (
+                                                <span className="rounded-full bg-gray-100 px-2 py-1 text-gray-700">
+                                                    {musica.tom}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    {musicaExpandida === musica.id ? (
+                                        <ChevronUp className="h-5 w-5 flex-shrink-0 text-gray-400" />
+                                    ) : (
+                                        <ChevronDown className="h-5 w-5 flex-shrink-0 text-gray-400" />
+                                    )}
+                                </button>
+
+                                {/* Letra da Música (Expansível) */}
+                                {musicaExpandida === musica.id && (
+                                    <div className="border-t border-gray-200 bg-gray-50 p-4">
+                                        <LetraFormatada
+                                            letra={musica.letra}
+                                            acaoDireita={
+                                                musica.has_audio ? (
+                                                    <button
+                                                        onClick={() =>
+                                                            player.tocar(faixa)
+                                                        }
+                                                        title={
+                                                            noPlayer &&
+                                                            player.tocando
+                                                                ? 'Pausar'
+                                                                : 'Ouvir'
+                                                        }
+                                                        className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                                                            noPlayer
+                                                                ? 'border-transparent text-white'
+                                                                : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'
+                                                        }`}
+                                                        style={
+                                                            noPlayer
+                                                                ? {
+                                                                      backgroundColor:
+                                                                          '#C7AB65',
+                                                                  }
+                                                                : {}
+                                                        }
+                                                    >
+                                                        {noPlayer &&
+                                                        player.tocando ? (
+                                                            <Pause className="h-4 w-4" />
+                                                        ) : (
+                                                            <Play className="h-4 w-4" />
+                                                        )}
+                                                        Ouvir
+                                                    </button>
+                                                ) : null
+                                            }
+                                        />
+                                        {musica.pivot?.observacao && (
+                                            <div className="mt-4 rounded border-l-4 border-yellow-400 bg-yellow-50 p-3">
+                                                <p className="text-sm text-yellow-800">
+                                                    <strong>Observação:</strong>{' '}
+                                                    {musica.pivot.observacao}
+                                                </p>
+                                            </div>
                                         )}
                                     </div>
-                                </div>
-                                {musicaExpandida === musica.id ? (
-                                    <ChevronUp className="h-5 w-5 flex-shrink-0 text-gray-400" />
-                                ) : (
-                                    <ChevronDown className="h-5 w-5 flex-shrink-0 text-gray-400" />
                                 )}
-                            </button>
-
-                            {/* Letra da Música (Expansível) */}
-                            {musicaExpandida === musica.id && (
-                                <div className="border-t border-gray-200 bg-gray-50 p-4">
-                                    <LetraFormatada
-                                        letra={musica.letra}
-                                        acaoDireita={
-                                            musica.has_audio ? (
-                                                <button
-                                                    onClick={() =>
-                                                        playMusica(musica)
-                                                    }
-                                                    title={
-                                                        audioMusica?.id ===
-                                                            musica.id && tocando
-                                                            ? 'Pausar'
-                                                            : 'Ouvir'
-                                                    }
-                                                    className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-                                                        audioMusica?.id ===
-                                                        musica.id
-                                                            ? 'border-transparent text-white'
-                                                            : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'
-                                                    }`}
-                                                    style={
-                                                        audioMusica?.id ===
-                                                        musica.id
-                                                            ? {
-                                                                  backgroundColor:
-                                                                      '#C7AB65',
-                                                              }
-                                                            : {}
-                                                    }
-                                                >
-                                                    {audioMusica?.id ===
-                                                        musica.id && tocando ? (
-                                                        <Pause className="h-4 w-4" />
-                                                    ) : (
-                                                        <Play className="h-4 w-4" />
-                                                    )}
-                                                    Ouvir
-                                                </button>
-                                            ) : null
-                                        }
-                                    />
-                                    {musica.pivot?.observacao && (
-                                        <div className="mt-4 rounded border-l-4 border-yellow-400 bg-yellow-50 p-3">
-                                            <p className="text-sm text-yellow-800">
-                                                <strong>Observação:</strong>{' '}
-                                                {musica.pivot.observacao}
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    ))}
+                            </div>
+                        );
+                    })}
                 </div>
 
                 {/* Mensagem se não houver músicas */}
@@ -366,121 +316,8 @@ ${musicasHtml}
                 </div>
             </div>
 
-            {/* Player fixo no rodapé */}
-            {audioMusica && (
-                <div
-                    className="fixed inset-x-0 bottom-0 z-50 border-t shadow-[0_-2px_12px_rgba(0,0,0,0.08)]"
-                    style={{ backgroundColor: '#FDFAF4' }}
-                >
-                    <div className="mx-auto max-w-3xl px-4 py-2.5">
-                        {/* Info da música */}
-                        <p className="mb-2 truncate text-sm font-medium text-gray-800">
-                            {audioMusica?.numero && (
-                                <span
-                                    className="mr-1.5 font-bold"
-                                    style={{ color: '#C7AB65' }}
-                                >
-                                    {audioMusica.numero}
-                                </span>
-                            )}
-                            {audioMusica?.titulo}
-                        </p>
-
-                        {/* Controles */}
-                        <div className="flex items-center gap-2.5">
-                            {/* Play / Pause */}
-                            <button
-                                onClick={() =>
-                                    audioMusica && playMusica(audioMusica)
-                                }
-                                className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-white transition-opacity hover:opacity-80"
-                                style={{ backgroundColor: '#C7AB65' }}
-                            >
-                                {tocando ? (
-                                    <Pause className="h-3.5 w-3.5" />
-                                ) : (
-                                    <Play className="ml-0.5 h-3.5 w-3.5" />
-                                )}
-                            </button>
-
-                            {/* Tempo atual */}
-                            <span className="w-9 flex-shrink-0 text-right text-xs text-gray-500 tabular-nums">
-                                {formatarTempo(tempoAtual)}
-                            </span>
-
-                            {/* Scrubber */}
-                            <input
-                                type="range"
-                                min={0}
-                                max={duracao || 100}
-                                value={tempoAtual}
-                                onChange={(e) => {
-                                    const t = Number(e.target.value);
-                                    setTempoAtual(t);
-                                    if (audioRef.current)
-                                        audioRef.current.currentTime = t;
-                                }}
-                                className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-gray-200"
-                                style={{ accentColor: '#C7AB65' }}
-                            />
-
-                            {/* Duração */}
-                            <span className="w-9 flex-shrink-0 text-xs text-gray-500 tabular-nums">
-                                {formatarTempo(duracao)}
-                            </span>
-
-                            {/* Volume */}
-                            <button
-                                onClick={() => handleVolume(volume > 0 ? 0 : 1)}
-                                className="flex-shrink-0 text-gray-400 transition-colors hover:text-gray-600"
-                            >
-                                {volume === 0 ? (
-                                    <VolumeX className="h-4 w-4" />
-                                ) : (
-                                    <Volume2 className="h-4 w-4" />
-                                )}
-                            </button>
-                            <input
-                                type="range"
-                                min={0}
-                                max={1}
-                                step={0.05}
-                                value={volume}
-                                onChange={(e) =>
-                                    handleVolume(Number(e.target.value))
-                                }
-                                className="hidden h-1.5 w-16 cursor-pointer appearance-none rounded-full bg-gray-200 sm:block"
-                                style={{ accentColor: '#C7AB65' }}
-                            />
-
-                            {/* Fechar player */}
-                            <button
-                                onClick={fecharPlayer}
-                                className="flex-shrink-0 text-gray-400 transition-colors hover:text-gray-600"
-                            >
-                                <X className="h-4 w-4" />
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Elemento de áudio (oculto) */}
-            <audio
-                ref={audioRef}
-                onTimeUpdate={() =>
-                    setTempoAtual(audioRef.current?.currentTime ?? 0)
-                }
-                onLoadedMetadata={() =>
-                    setDuracao(audioRef.current?.duration ?? 0)
-                }
-                onPlay={() => setTocando(true)}
-                onPause={() => setTocando(false)}
-                onEnded={() => {
-                    setTocando(false);
-                    setTempoAtual(0);
-                }}
-            />
+            {/* Player fixo no rodapé (componente compartilhado) */}
+            <AudioPlayerBar player={player} variant="fixed" />
         </AppLayout>
     );
 }

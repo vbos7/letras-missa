@@ -18,9 +18,9 @@ class TemaFactory extends Factory
         $nome = fake()->unique()->word();
 
         return [
-            'nome' => ucfirst($nome),
-            'slug' => Str::slug($nome),
-            'cor' => fake()->hexColor(),
+            'nome'  => ucfirst($nome),
+            'slug'  => Str::slug($nome),
+            'cor'   => fake()->hexColor(),
             'ordem' => fake()->unique()->numberBetween(1, 100),
         ];
     }

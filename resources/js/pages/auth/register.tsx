@@ -47,7 +47,9 @@ export default function Register() {
                                 id="name"
                                 type="text"
                                 value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    setData('name', e.target.value)
+                                }
                                 className="mt-2 block w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-green-500 focus:ring-2 focus:ring-green-500"
                                 placeholder="Seu nome"
                                 required

@@ -1,10 +1,9 @@
 <?php
 
-use App\Models\Musica;
-use App\Models\Tema;
+use App\Models\{Musica, Tema};
 
 it('tem relacionamento com músicas', function () {
-    $tema = Tema::factory()->create();
+    $tema    = Tema::factory()->create();
     $musicas = Musica::factory()->count(3)->create();
     $musicas->each(fn ($m) => $m->temas()->attach($tema->id));
 
@@ -13,9 +12,9 @@ it('tem relacionamento com músicas', function () {
 
 it('preenche os campos corretamente', function () {
     $tema = Tema::factory()->create([
-        'nome' => 'Entrada',
-        'slug' => 'entrada',
-        'cor' => '#FF0000',
+        'nome'  => 'Entrada',
+        'slug'  => 'entrada',
+        'cor'   => '#FF0000',
         'ordem' => 1,
     ]);
 
