@@ -2,8 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Musica;
-use App\Models\Tema;
+use App\Models\{Musica, Tema};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

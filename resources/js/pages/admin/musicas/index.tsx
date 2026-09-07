@@ -14,8 +14,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
 import {
     Pagination,
     PaginationContent,
@@ -25,7 +23,13 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from '@/components/ui/pagination';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { Edit, Eye, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -254,7 +258,9 @@ export default function MusicasIndex({ musicas, temas, filters }: Props) {
                                                 <AlertDialog>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <AlertDialogTrigger asChild>
+                                                            <AlertDialogTrigger
+                                                                asChild
+                                                            >
                                                                 <Button
                                                                     variant="destructive"
                                                                     size="sm"
@@ -264,7 +270,9 @@ export default function MusicasIndex({ musicas, temas, filters }: Props) {
                                                             </AlertDialogTrigger>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
-                                                            <p>Excluir música</p>
+                                                            <p>
+                                                                Excluir música
+                                                            </p>
                                                         </TooltipContent>
                                                     </Tooltip>
                                                     <AlertDialogContent>
@@ -310,37 +318,70 @@ export default function MusicasIndex({ musicas, temas, filters }: Props) {
                                     <PaginationContent>
                                         <PaginationItem>
                                             <PaginationPrevious
-                                                href={musicas.current_page > 1 ? `/admin/musicas?page=${musicas.current_page - 1}&search=${search}&tema_id=${temaId}` : '#'}
-                                                aria-disabled={musicas.current_page === 1}
-                                                className={musicas.current_page === 1 ? 'pointer-events-none opacity-50' : ''}
+                                                href={
+                                                    musicas.current_page > 1
+                                                        ? `/admin/musicas?page=${musicas.current_page - 1}&search=${search}&tema_id=${temaId}`
+                                                        : '#'
+                                                }
+                                                aria-disabled={
+                                                    musicas.current_page === 1
+                                                }
+                                                className={
+                                                    musicas.current_page === 1
+                                                        ? 'pointer-events-none opacity-50'
+                                                        : ''
+                                                }
                                             />
                                         </PaginationItem>
 
                                         {(() => {
-                                            const current = musicas.current_page;
+                                            const current =
+                                                musicas.current_page;
                                             const last = musicas.last_page;
-                                            const pages: (number | 'ellipsis')[] = [];
+                                            const pages: (
+                                                | number
+                                                | 'ellipsis'
+                                            )[] = [];
 
                                             if (last <= 7) {
-                                                for (let i = 1; i <= last; i++) pages.push(i);
+                                                for (let i = 1; i <= last; i++)
+                                                    pages.push(i);
                                             } else {
                                                 pages.push(1);
-                                                if (current > 3) pages.push('ellipsis');
-                                                for (let i = Math.max(2, current - 1); i <= Math.min(last - 1, current + 1); i++) pages.push(i);
-                                                if (current < last - 2) pages.push('ellipsis');
+                                                if (current > 3)
+                                                    pages.push('ellipsis');
+                                                for (
+                                                    let i = Math.max(
+                                                        2,
+                                                        current - 1,
+                                                    );
+                                                    i <=
+                                                    Math.min(
+                                                        last - 1,
+                                                        current + 1,
+                                                    );
+                                                    i++
+                                                )
+                                                    pages.push(i);
+                                                if (current < last - 2)
+                                                    pages.push('ellipsis');
                                                 pages.push(last);
                                             }
 
                                             return pages.map((p, i) =>
                                                 p === 'ellipsis' ? (
-                                                    <PaginationItem key={`ellipsis-${i}`}>
+                                                    <PaginationItem
+                                                        key={`ellipsis-${i}`}
+                                                    >
                                                         <PaginationEllipsis />
                                                     </PaginationItem>
                                                 ) : (
                                                     <PaginationItem key={p}>
                                                         <PaginationLink
                                                             href={`/admin/musicas?page=${p}&search=${search}&tema_id=${temaId}`}
-                                                            isActive={p === current}
+                                                            isActive={
+                                                                p === current
+                                                            }
                                                         >
                                                             {p}
                                                         </PaginationLink>
@@ -351,9 +392,22 @@ export default function MusicasIndex({ musicas, temas, filters }: Props) {
 
                                         <PaginationItem>
                                             <PaginationNext
-                                                href={musicas.current_page < musicas.last_page ? `/admin/musicas?page=${musicas.current_page + 1}&search=${search}&tema_id=${temaId}` : '#'}
-                                                aria-disabled={musicas.current_page === musicas.last_page}
-                                                className={musicas.current_page === musicas.last_page ? 'pointer-events-none opacity-50' : ''}
+                                                href={
+                                                    musicas.current_page <
+                                                    musicas.last_page
+                                                        ? `/admin/musicas?page=${musicas.current_page + 1}&search=${search}&tema_id=${temaId}`
+                                                        : '#'
+                                                }
+                                                aria-disabled={
+                                                    musicas.current_page ===
+                                                    musicas.last_page
+                                                }
+                                                className={
+                                                    musicas.current_page ===
+                                                    musicas.last_page
+                                                        ? 'pointer-events-none opacity-50'
+                                                        : ''
+                                                }
                                             />
                                         </PaginationItem>
                                     </PaginationContent>

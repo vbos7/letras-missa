@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Lista;
-use App\Models\Musica;
-use App\Models\Tema;
+use App\Models\{Lista, Musica, Tema};
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,12 +19,12 @@ class ListaController extends Controller
             ->get();
 
         $temas = Tema::with(['musicas' => function ($query) {
-            $query->where('ativo', true)->orderBy('numero');
+            $query->where('ativo', true)->orderBy('numero')->with('audioInfo');
         }])->orderBy('ordem')->get();
 
         return Inertia::render('listas/index', [
             'listas' => $listas,
-            'temas' => $temas,
+            'temas'  => $temas,
         ]);
     }
 
@@ -38,13 +36,13 @@ class ListaController extends Controller
     public function storeGuiada(Request $request)
     {
         $validated = $request->validate([
-            'nome' => 'required|string|max:255',
-            'musicas' => 'array',
+            'nome'      => 'required|string|max:255',
+            'musicas'   => 'array',
             'musicas.*' => 'exists:musicas,id',
         ]);
 
         $lista = auth()->user()->listas()->create([
-            'nome' => $validated['nome'],
+            'nome'    => $validated['nome'],
             'publica' => true,
         ]);
 
@@ -59,7 +57,7 @@ class ListaController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nome' => 'required|string|max:255',
+            'nome'    => 'required|string|max:255',
             'publica' => 'boolean',
         ]);
 
@@ -73,8 +71,8 @@ class ListaController extends Controller
     {
         $this->authorize('update', $lista);
 
-        $lista->load(['musicas.temas']);
-        $todasMusicas = Musica::with('temas')
+        $lista->load(['musicas.temas', 'musicas.audioInfo']);
+        $todasMusicas = Musica::with('temas', 'audioInfo')
             ->where('ativo', true)
             ->orderBy('numero')
             ->get();
@@ -85,7 +83,7 @@ class ListaController extends Controller
         });
 
         // Buscar temas e autores para os filtros
-        $temas = Tema::orderBy('ordem')->get();
+        $temas   = Tema::orderBy('ordem')->get();
         $autores = Musica::whereNotNull('autor')
             ->where('ativo', true)
             ->distinct()
@@ -94,10 +92,10 @@ class ListaController extends Controller
             ->values();
 
         return Inertia::render('listas/edit', [
-            'lista' => $lista,
+            'lista'        => $lista,
             'todasMusicas' => $todasMusicas,
-            'temas' => $temas,
-            'autores' => $autores,
+            'temas'        => $temas,
+            'autores'      => $autores,
         ]);
     }
 
@@ -106,7 +104,7 @@ class ListaController extends Controller
         $this->authorize('update', $lista);
 
         $validated = $request->validate([
-            'nome' => 'required|string|max:255',
+            'nome'    => 'required|string|max:255',
             'publica' => 'boolean',
         ]);
 
@@ -120,7 +118,7 @@ class ListaController extends Controller
         $this->authorize('update', $lista);
 
         $validated = $request->validate([
-            'musica_id' => 'required|exists:musicas,id',
+            'musica_id'  => 'required|exists:musicas,id',
             'observacao' => 'nullable|string',
         ]);
 
@@ -133,7 +131,7 @@ class ListaController extends Controller
         $ultimaOrdem = $lista->musicas()->max('ordem') ?? 0;
 
         $lista->musicas()->attach($validated['musica_id'], [
-            'ordem' => $ultimaOrdem + 1,
+            'ordem'      => $ultimaOrdem + 1,
             'observacao' => $validated['observacao'] ?? null,
         ]);
 
@@ -165,8 +163,8 @@ class ListaController extends Controller
         $this->authorize('update', $lista);
 
         $validated = $request->validate([
-            'musicas' => 'required|array',
-            'musicas.*.id' => 'required|exists:musicas,id',
+            'musicas'         => 'required|array',
+            'musicas.*.id'    => 'required|exists:musicas,id',
             'musicas.*.ordem' => 'required|integer',
         ]);
 
@@ -198,13 +196,13 @@ class ListaController extends Controller
 
         if (!$lista) {
             return Inertia::render('errors/404', [
-                'status' => 404,
+                'status'  => 404,
                 'message' => 'Esta lista não existe ou não está mais disponível publicamente.',
             ])->toResponse(request())->setStatusCode(404);
         }
 
         $lista->incrementarVisualizacoes();
-        $lista->load(['musicas.temas', 'user']);
+        $lista->load(['musicas.temas', 'musicas.audioInfo', 'user']);
 
         // Indica quais músicas possuem arquivo de áudio (nomeado pelo número).
         $lista->musicas->each(function ($m) {

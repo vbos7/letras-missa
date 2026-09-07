@@ -1,6 +1,6 @@
 import AppLayout from '@/components/app-layout';
 import { Head, Link } from '@inertiajs/react';
-import { ShieldAlert, Home, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Home, ShieldAlert } from 'lucide-react';
 
 interface Props {
     status?: number;

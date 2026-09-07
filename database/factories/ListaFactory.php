@@ -2,8 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Lista;
-use App\Models\User;
+use App\Models\{Lista, User};
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -17,10 +16,10 @@ class ListaFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(),
-            'nome' => fake()->sentence(2),
-            'token' => Str::random(32),
-            'publica' => true,
+            'user_id'       => User::factory(),
+            'nome'          => fake()->sentence(2),
+            'token'         => Str::random(32),
+            'publica'       => true,
             'visualizacoes' => 0,
         ];
     }

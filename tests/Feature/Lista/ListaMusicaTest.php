@@ -1,12 +1,10 @@
 <?php
 
-use App\Models\Lista;
-use App\Models\Musica;
-use App\Models\User;
+use App\Models\{Lista, Musica, User};
 
 it('adiciona música a uma lista', function () {
-    $user = User::factory()->create();
-    $lista = Lista::factory()->create(['user_id' => $user->id]);
+    $user   = User::factory()->create();
+    $lista  = Lista::factory()->create(['user_id' => $user->id]);
     $musica = Musica::factory()->create();
 
     $this->actingAs($user)
@@ -19,8 +17,8 @@ it('adiciona música a uma lista', function () {
 });
 
 it('não adiciona música duplicada na lista', function () {
-    $user = User::factory()->create();
-    $lista = Lista::factory()->create(['user_id' => $user->id]);
+    $user   = User::factory()->create();
+    $lista  = Lista::factory()->create(['user_id' => $user->id]);
     $musica = Musica::factory()->create();
 
     $lista->musicas()->attach($musica->id, ['ordem' => 1]);
@@ -35,8 +33,8 @@ it('não adiciona música duplicada na lista', function () {
 });
 
 it('remove música de uma lista', function () {
-    $user = User::factory()->create();
-    $lista = Lista::factory()->create(['user_id' => $user->id]);
+    $user   = User::factory()->create();
+    $lista  = Lista::factory()->create(['user_id' => $user->id]);
     $musica = Musica::factory()->create();
     $lista->musicas()->attach($musica->id, ['ordem' => 1]);
 
@@ -48,8 +46,8 @@ it('remove música de uma lista', function () {
 });
 
 it('reordena músicas de uma lista', function () {
-    $user = User::factory()->create();
-    $lista = Lista::factory()->create(['user_id' => $user->id]);
+    $user    = User::factory()->create();
+    $lista   = Lista::factory()->create(['user_id' => $user->id]);
     $musicas = Musica::factory()->count(3)->create();
 
     foreach ($musicas as $i => $musica) {
@@ -71,10 +69,10 @@ it('reordena músicas de uma lista', function () {
 });
 
 it('impede outro usuário de adicionar música na lista', function () {
-    $user = User::factory()->create();
+    $user      = User::factory()->create();
     $outroUser = User::factory()->create();
-    $lista = Lista::factory()->create(['user_id' => $outroUser->id]);
-    $musica = Musica::factory()->create();
+    $lista     = Lista::factory()->create(['user_id' => $outroUser->id]);
+    $musica    = Musica::factory()->create();
 
     $this->actingAs($user)
         ->post(route('musicas.adicionar', $lista), [

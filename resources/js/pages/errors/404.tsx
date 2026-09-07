@@ -8,7 +8,8 @@ interface Props {
 }
 
 export default function NotFound({ status = 404, message }: Props) {
-    const defaultMessage = 'A página ou lista que você está procurando não existe ou foi removida.';
+    const defaultMessage =
+        'A página ou lista que você está procurando não existe ou foi removida.';
     const displayMessage = message || defaultMessage;
 
     return (

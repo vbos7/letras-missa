@@ -1,3 +1,4 @@
+import { type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import {
     FileText,
@@ -12,10 +13,10 @@ import {
     Shield,
     X,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 
-export default function AppLayout({ children }) {
-    const { auth } = usePage().props;
+export default function AppLayout({ children }: { children: ReactNode }) {
+    const { auth } = usePage<SharedData>().props;
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [sobreModalAberto, setSobreModalAberto] = useState(false);
     const [termosModalAberto, setTermosModalAberto] = useState(false);
@@ -47,16 +48,25 @@ export default function AppLayout({ children }) {
         document.documentElement.style.colorScheme = 'light';
         return () => {
             // Ao sair da página pública, restaura a preferência salva (para o painel admin)
-            const saved = (localStorage.getItem('appearance') as 'light' | 'dark' | 'system') || 'system';
-            const isDark = saved === 'dark' || (saved === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            const saved =
+                (localStorage.getItem('appearance') as
+                    | 'light'
+                    | 'dark'
+                    | 'system') || 'system';
+            const isDark =
+                saved === 'dark' ||
+                (saved === 'system' &&
+                    window.matchMedia('(prefers-color-scheme: dark)').matches);
             document.documentElement.classList.toggle('dark', isDark);
-            document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+            document.documentElement.style.colorScheme = isDark
+                ? 'dark'
+                : 'light';
         };
     }, []);
 
     // Fecha o menu ao pressionar ESC
     useEffect(() => {
-        const handleEsc = (e) => {
+        const handleEsc = (e: KeyboardEvent) => {
             if (e.key === 'Escape') setMobileMenuOpen(false);
         };
         window.addEventListener('keydown', handleEsc);
@@ -98,15 +108,18 @@ export default function AppLayout({ children }) {
                                     href={item.href}
                                     className="flex items-center space-x-1 rounded-md px-3 py-2 text-sm font-medium text-gray-700 transition-colors"
                                     style={{
-                                        color: 'rgb(55, 65, 81)'
+                                        color: 'rgb(55, 65, 81)',
                                     }}
                                     onMouseEnter={(e) => {
-                                        e.currentTarget.style.backgroundColor = '#F5F0E8';
+                                        e.currentTarget.style.backgroundColor =
+                                            '#F5F0E8';
                                         e.currentTarget.style.color = '#C7AB65';
                                     }}
                                     onMouseLeave={(e) => {
-                                        e.currentTarget.style.backgroundColor = '';
-                                        e.currentTarget.style.color = 'rgb(55, 65, 81)';
+                                        e.currentTarget.style.backgroundColor =
+                                            '';
+                                        e.currentTarget.style.color =
+                                            'rgb(55, 65, 81)';
                                     }}
                                 >
                                     <item.icon className="h-4 w-4" />
@@ -138,8 +151,14 @@ export default function AppLayout({ children }) {
                                         href="/login"
                                         className="text-sm font-medium text-gray-700 transition-colors"
                                         style={{ color: 'rgb(55, 65, 81)' }}
-                                        onMouseEnter={(e) => e.currentTarget.style.color = '#C7AB65'}
-                                        onMouseLeave={(e) => e.currentTarget.style.color = 'rgb(55, 65, 81)'}
+                                        onMouseEnter={(e) =>
+                                            (e.currentTarget.style.color =
+                                                '#C7AB65')
+                                        }
+                                        onMouseLeave={(e) =>
+                                            (e.currentTarget.style.color =
+                                                'rgb(55, 65, 81)')
+                                        }
                                     >
                                         Entrar
                                     </Link>
@@ -147,8 +166,14 @@ export default function AppLayout({ children }) {
                                         href="/register"
                                         className="rounded-md px-4 py-2 text-sm font-medium text-white transition-colors"
                                         style={{ backgroundColor: '#C7AB65' }}
-                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#B89B55'}
-                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#C7AB65'}
+                                        onMouseEnter={(e) =>
+                                            (e.currentTarget.style.backgroundColor =
+                                                '#B89B55')
+                                        }
+                                        onMouseLeave={(e) =>
+                                            (e.currentTarget.style.backgroundColor =
+                                                '#C7AB65')
+                                        }
                                     >
                                         Cadastrar
                                     </Link>
@@ -172,12 +197,13 @@ export default function AppLayout({ children }) {
                 <>
                     {/* Backdrop */}
                     <div
-                        className="fixed inset-0 z-50 bg-black bg-opacity-50 transition-opacity duration-300 lg:hidden"
+                        className="bg-opacity-50 fixed inset-0 z-50 bg-black transition-opacity duration-300 lg:hidden"
                         onClick={() => setMobileMenuOpen(false)}
                     />
 
                     {/* Sidebar */}
-                    <div className="fixed top-0 right-0 bottom-0 z-50 w-72 transform bg-white shadow-2xl transition-transform duration-300 ease-out lg:hidden"
+                    <div
+                        className="fixed top-0 right-0 bottom-0 z-50 w-72 transform bg-white shadow-2xl transition-transform duration-300 ease-out lg:hidden"
                         style={{ animation: 'slideInRight 0.3s ease-out' }}
                     >
                         <div className="flex h-full flex-col">
@@ -198,7 +224,10 @@ export default function AppLayout({ children }) {
                             <div className="flex-1 overflow-y-auto p-4">
                                 {/* User Info */}
                                 {auth.user && (
-                                    <div className="mb-4 rounded-lg p-4" style={{ backgroundColor: '#F5F0E8' }}>
+                                    <div
+                                        className="mb-4 rounded-lg p-4"
+                                        style={{ backgroundColor: '#F5F0E8' }}
+                                    >
                                         <p className="text-sm text-gray-600">
                                             Olá,
                                         </p>
@@ -216,14 +245,20 @@ export default function AppLayout({ children }) {
                                                 key={item.name}
                                                 href={item.href}
                                                 className="flex items-center space-x-3 rounded-lg px-4 py-3 text-base font-medium text-gray-700 transition-colors"
-                                                style={{ color: 'rgb(55, 65, 81)' }}
+                                                style={{
+                                                    color: 'rgb(55, 65, 81)',
+                                                }}
                                                 onMouseEnter={(e) => {
-                                                    e.currentTarget.style.backgroundColor = '#F5F0E8';
-                                                    e.currentTarget.style.color = '#C7AB65';
+                                                    e.currentTarget.style.backgroundColor =
+                                                        '#F5F0E8';
+                                                    e.currentTarget.style.color =
+                                                        '#C7AB65';
                                                 }}
                                                 onMouseLeave={(e) => {
-                                                    e.currentTarget.style.backgroundColor = '';
-                                                    e.currentTarget.style.color = 'rgb(55, 65, 81)';
+                                                    e.currentTarget.style.backgroundColor =
+                                                        '';
+                                                    e.currentTarget.style.color =
+                                                        'rgb(55, 65, 81)';
                                                 }}
                                                 onClick={() =>
                                                     setMobileMenuOpen(false)
@@ -255,9 +290,18 @@ export default function AppLayout({ children }) {
                                         <Link
                                             href="/login"
                                             className="block rounded-lg border-2 bg-white px-4 py-3 text-center text-base font-medium transition-colors"
-                                            style={{ borderColor: '#C7AB65', color: '#C7AB65' }}
-                                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F5F0E8'}
-                                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                                            style={{
+                                                borderColor: '#C7AB65',
+                                                color: '#C7AB65',
+                                            }}
+                                            onMouseEnter={(e) =>
+                                                (e.currentTarget.style.backgroundColor =
+                                                    '#F5F0E8')
+                                            }
+                                            onMouseLeave={(e) =>
+                                                (e.currentTarget.style.backgroundColor =
+                                                    'white')
+                                            }
                                             onClick={() =>
                                                 setMobileMenuOpen(false)
                                             }
@@ -267,9 +311,17 @@ export default function AppLayout({ children }) {
                                         <Link
                                             href="/register"
                                             className="block rounded-lg px-4 py-3 text-center text-base font-medium text-white transition-colors"
-                                            style={{ backgroundColor: '#C7AB65' }}
-                                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#B89B55'}
-                                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#C7AB65'}
+                                            style={{
+                                                backgroundColor: '#C7AB65',
+                                            }}
+                                            onMouseEnter={(e) =>
+                                                (e.currentTarget.style.backgroundColor =
+                                                    '#B89B55')
+                                            }
+                                            onMouseLeave={(e) =>
+                                                (e.currentTarget.style.backgroundColor =
+                                                    '#C7AB65')
+                                            }
                                             onClick={() =>
                                                 setMobileMenuOpen(false)
                                             }
@@ -300,8 +352,12 @@ export default function AppLayout({ children }) {
                             onClick={() => setSobreModalAberto(true)}
                             className="flex items-center gap-1 text-sm transition-colors"
                             style={{ color: '#C7AB65' }}
-                            onMouseEnter={(e) => e.currentTarget.style.color = '#B89B55'}
-                            onMouseLeave={(e) => e.currentTarget.style.color = '#C7AB65'}
+                            onMouseEnter={(e) =>
+                                (e.currentTarget.style.color = '#B89B55')
+                            }
+                            onMouseLeave={(e) =>
+                                (e.currentTarget.style.color = '#C7AB65')
+                            }
                         >
                             <Info className="h-4 w-4" />
                             Sobre
@@ -310,8 +366,12 @@ export default function AppLayout({ children }) {
                             onClick={() => setTermosModalAberto(true)}
                             className="flex items-center gap-1 text-sm transition-colors"
                             style={{ color: '#C7AB65' }}
-                            onMouseEnter={(e) => e.currentTarget.style.color = '#B89B55'}
-                            onMouseLeave={(e) => e.currentTarget.style.color = '#C7AB65'}
+                            onMouseEnter={(e) =>
+                                (e.currentTarget.style.color = '#B89B55')
+                            }
+                            onMouseLeave={(e) =>
+                                (e.currentTarget.style.color = '#C7AB65')
+                            }
                         >
                             <FileText className="h-4 w-4" />
                             Termos de Uso
@@ -320,8 +380,12 @@ export default function AppLayout({ children }) {
                             onClick={() => setPrivacidadeModalAberto(true)}
                             className="flex items-center gap-1 text-sm transition-colors"
                             style={{ color: '#C7AB65' }}
-                            onMouseEnter={(e) => e.currentTarget.style.color = '#B89B55'}
-                            onMouseLeave={(e) => e.currentTarget.style.color = '#C7AB65'}
+                            onMouseEnter={(e) =>
+                                (e.currentTarget.style.color = '#B89B55')
+                            }
+                            onMouseLeave={(e) =>
+                                (e.currentTarget.style.color = '#C7AB65')
+                            }
                         >
                             <Shield className="h-4 w-4" />
                             Política de Privacidade
@@ -333,7 +397,7 @@ export default function AppLayout({ children }) {
             {/* Modal Termos de Uso */}
             {termosModalAberto && (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+                    className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black p-4"
                     onClick={() => setTermosModalAberto(false)}
                 >
                     <div
@@ -341,7 +405,9 @@ export default function AppLayout({ children }) {
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex flex-shrink-0 items-center justify-between border-b border-gray-200 p-6">
-                            <h3 className="text-2xl font-bold text-gray-900">Termos de Uso</h3>
+                            <h3 className="text-2xl font-bold text-gray-900">
+                                Termos de Uso
+                            </h3>
                             <button
                                 onClick={() => setTermosModalAberto(false)}
                                 className="rounded-lg p-2 transition-colors hover:bg-gray-100"
@@ -352,53 +418,157 @@ export default function AppLayout({ children }) {
 
                         <div className="overflow-y-auto p-6">
                             <div className="space-y-5 text-sm text-gray-700">
-                                <p className="text-xs text-gray-400">Última atualização: junho de 2026</p>
+                                <p className="text-xs text-gray-400">
+                                    Última atualização: junho de 2026
+                                </p>
 
                                 <div className="space-y-2">
-                                    <h4 className="font-semibold text-gray-900">1. Aceitação dos Termos</h4>
-                                    <p>Ao acessar e utilizar o <strong>Cânticos de Missa</strong>, você concorda com estes Termos de Uso. Caso não concorde, por favor, não utilize o serviço.</p>
+                                    <h4 className="font-semibold text-gray-900">
+                                        1. Aceitação dos Termos
+                                    </h4>
+                                    <p>
+                                        Ao acessar e utilizar o{' '}
+                                        <strong>Cânticos de Missa</strong>, você
+                                        concorda com estes Termos de Uso. Caso
+                                        não concorde, por favor, não utilize o
+                                        serviço.
+                                    </p>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <h4 className="font-semibold text-gray-900">2. Sobre o Serviço</h4>
-                                    <p>O Cânticos de Missa é uma plataforma <strong>gratuita, sem fins lucrativos</strong>, criada para auxiliar a comunidade católica no acesso às letras e repertório de cânticos litúrgicos. Não há interesses comerciais envolvidos.</p>
+                                    <h4 className="font-semibold text-gray-900">
+                                        2. Sobre o Serviço
+                                    </h4>
+                                    <p>
+                                        O Cânticos de Missa é uma plataforma{' '}
+                                        <strong>
+                                            gratuita, sem fins lucrativos
+                                        </strong>
+                                        , criada para auxiliar a comunidade
+                                        católica no acesso às letras e
+                                        repertório de cânticos litúrgicos. Não
+                                        há interesses comerciais envolvidos.
+                                    </p>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <h4 className="font-semibold text-gray-900">3. Direitos Autorais e Conteúdo</h4>
-                                    <p>As letras dos cânticos e os áudios disponíveis nesta plataforma são de propriedade de seus respectivos autores, compositores e editoras. O Cânticos de Missa <strong>não reivindica qualquer propriedade</strong> sobre este conteúdo.</p>
-                                    <p>O conteúdo é disponibilizado exclusivamente para <strong>fins religiosos, litúrgicos e educacionais</strong>, em caráter não comercial, no espírito do serviço à comunidade católica.</p>
-                                    <p>Se você é titular de direitos autorais sobre algum conteúdo presente nesta plataforma e deseja sua remoção, entre em contato conosco e providenciaremos a retirada imediatamente.</p>
+                                    <h4 className="font-semibold text-gray-900">
+                                        3. Direitos Autorais e Conteúdo
+                                    </h4>
+                                    <p>
+                                        As letras dos cânticos e os áudios
+                                        disponíveis nesta plataforma são de
+                                        propriedade de seus respectivos autores,
+                                        compositores e editoras. O Cânticos de
+                                        Missa{' '}
+                                        <strong>
+                                            não reivindica qualquer propriedade
+                                        </strong>{' '}
+                                        sobre este conteúdo.
+                                    </p>
+                                    <p>
+                                        O conteúdo é disponibilizado
+                                        exclusivamente para{' '}
+                                        <strong>
+                                            fins religiosos, litúrgicos e
+                                            educacionais
+                                        </strong>
+                                        , em caráter não comercial, no espírito
+                                        do serviço à comunidade católica.
+                                    </p>
+                                    <p>
+                                        Se você é titular de direitos autorais
+                                        sobre algum conteúdo presente nesta
+                                        plataforma e deseja sua remoção, entre
+                                        em contato conosco e providenciaremos a
+                                        retirada imediatamente.
+                                    </p>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <h4 className="font-semibold text-gray-900">4. Uso dos Áudios</h4>
-                                    <p>Os áudios disponíveis na plataforma são fornecidos <strong>exclusivamente para referência musical</strong> durante o estudo de repertório e preparação de celebrações litúrgicas. É expressamente proibido:</p>
+                                    <h4 className="font-semibold text-gray-900">
+                                        4. Uso dos Áudios
+                                    </h4>
+                                    <p>
+                                        Os áudios disponíveis na plataforma são
+                                        fornecidos{' '}
+                                        <strong>
+                                            exclusivamente para referência
+                                            musical
+                                        </strong>{' '}
+                                        durante o estudo de repertório e
+                                        preparação de celebrações litúrgicas. É
+                                        expressamente proibido:
+                                    </p>
                                     <ul className="list-inside list-disc space-y-1 pl-4">
-                                        <li>Baixar ou redistribuir os áudios</li>
-                                        <li>Utilizar os áudios para fins comerciais</li>
-                                        <li>Reproduzir publicamente os áudios fora do contexto religioso</li>
+                                        <li>
+                                            Baixar ou redistribuir os áudios
+                                        </li>
+                                        <li>
+                                            Utilizar os áudios para fins
+                                            comerciais
+                                        </li>
+                                        <li>
+                                            Reproduzir publicamente os áudios
+                                            fora do contexto religioso
+                                        </li>
                                     </ul>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <h4 className="font-semibold text-gray-900">5. Contas de Usuário</h4>
-                                    <p>Ao criar uma conta, você é responsável pela segurança de suas credenciais e por todas as atividades realizadas em sua conta. É proibido utilizar a plataforma para qualquer finalidade ilícita ou que viole direitos de terceiros.</p>
+                                    <h4 className="font-semibold text-gray-900">
+                                        5. Contas de Usuário
+                                    </h4>
+                                    <p>
+                                        Ao criar uma conta, você é responsável
+                                        pela segurança de suas credenciais e por
+                                        todas as atividades realizadas em sua
+                                        conta. É proibido utilizar a plataforma
+                                        para qualquer finalidade ilícita ou que
+                                        viole direitos de terceiros.
+                                    </p>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <h4 className="font-semibold text-gray-900">6. Limitação de Responsabilidade</h4>
-                                    <p>O Cânticos de Missa é fornecido "como está", sem garantias de disponibilidade ininterrupta. Não nos responsabilizamos por eventuais imprecisões nas letras ou pelo uso indevido do conteúdo por parte dos usuários.</p>
+                                    <h4 className="font-semibold text-gray-900">
+                                        6. Limitação de Responsabilidade
+                                    </h4>
+                                    <p>
+                                        O Cânticos de Missa é fornecido "como
+                                        está", sem garantias de disponibilidade
+                                        ininterrupta. Não nos responsabilizamos
+                                        por eventuais imprecisões nas letras ou
+                                        pelo uso indevido do conteúdo por parte
+                                        dos usuários.
+                                    </p>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <h4 className="font-semibold text-gray-900">7. Alterações nos Termos</h4>
-                                    <p>Reservamo-nos o direito de atualizar estes termos a qualquer momento. O uso continuado da plataforma após alterações constitui aceitação dos novos termos.</p>
+                                    <h4 className="font-semibold text-gray-900">
+                                        7. Alterações nos Termos
+                                    </h4>
+                                    <p>
+                                        Reservamo-nos o direito de atualizar
+                                        estes termos a qualquer momento. O uso
+                                        continuado da plataforma após alterações
+                                        constitui aceitação dos novos termos.
+                                    </p>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <h4 className="font-semibold text-gray-900">8. Contato</h4>
-                                    <p>Para dúvidas, solicitações de remoção de conteúdo ou qualquer questão relacionada a estes termos, entre em contato pelo e-mail <strong>contato@viniciusboschetti.com.br</strong>.</p>
+                                    <h4 className="font-semibold text-gray-900">
+                                        8. Contato
+                                    </h4>
+                                    <p>
+                                        Para dúvidas, solicitações de remoção de
+                                        conteúdo ou qualquer questão relacionada
+                                        a estes termos, entre em contato pelo
+                                        e-mail{' '}
+                                        <strong>
+                                            contato@viniciusboschetti.com.br
+                                        </strong>
+                                        .
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -408,8 +578,14 @@ export default function AppLayout({ children }) {
                                 onClick={() => setTermosModalAberto(false)}
                                 className="w-full rounded-lg px-4 py-2 font-medium text-white transition-colors"
                                 style={{ backgroundColor: '#C7AB65' }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#B89B55'}
-                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#C7AB65'}
+                                onMouseEnter={(e) =>
+                                    (e.currentTarget.style.backgroundColor =
+                                        '#B89B55')
+                                }
+                                onMouseLeave={(e) =>
+                                    (e.currentTarget.style.backgroundColor =
+                                        '#C7AB65')
+                                }
                             >
                                 Entendi
                             </button>
@@ -421,7 +597,7 @@ export default function AppLayout({ children }) {
             {/* Modal Política de Privacidade */}
             {privacidadeModalAberto && (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+                    className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black p-4"
                     onClick={() => setPrivacidadeModalAberto(false)}
                 >
                     <div
@@ -429,7 +605,9 @@ export default function AppLayout({ children }) {
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex flex-shrink-0 items-center justify-between border-b border-gray-200 p-6">
-                            <h3 className="text-2xl font-bold text-gray-900">Política de Privacidade</h3>
+                            <h3 className="text-2xl font-bold text-gray-900">
+                                Política de Privacidade
+                            </h3>
                             <button
                                 onClick={() => setPrivacidadeModalAberto(false)}
                                 className="rounded-lg p-2 transition-colors hover:bg-gray-100"
@@ -440,73 +618,184 @@ export default function AppLayout({ children }) {
 
                         <div className="overflow-y-auto p-6">
                             <div className="space-y-5 text-sm text-gray-700">
-                                <p className="text-xs text-gray-400">Última atualização: junho de 2026</p>
+                                <p className="text-xs text-gray-400">
+                                    Última atualização: junho de 2026
+                                </p>
 
                                 <div className="space-y-2">
-                                    <h4 className="font-semibold text-gray-900">1. Introdução</h4>
-                                    <p>O <strong>Cânticos de Missa</strong> está comprometido com a proteção dos seus dados pessoais, em conformidade com a <strong>Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018)</strong>. Esta política explica como coletamos, usamos e protegemos suas informações.</p>
+                                    <h4 className="font-semibold text-gray-900">
+                                        1. Introdução
+                                    </h4>
+                                    <p>
+                                        O <strong>Cânticos de Missa</strong>{' '}
+                                        está comprometido com a proteção dos
+                                        seus dados pessoais, em conformidade com
+                                        a{' '}
+                                        <strong>
+                                            Lei Geral de Proteção de Dados (LGPD
+                                            — Lei nº 13.709/2018)
+                                        </strong>
+                                        . Esta política explica como coletamos,
+                                        usamos e protegemos suas informações.
+                                    </p>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <h4 className="font-semibold text-gray-900">2. Dados Coletados</h4>
-                                    <p>Coletamos apenas o mínimo necessário para o funcionamento da plataforma:</p>
+                                    <h4 className="font-semibold text-gray-900">
+                                        2. Dados Coletados
+                                    </h4>
+                                    <p>
+                                        Coletamos apenas o mínimo necessário
+                                        para o funcionamento da plataforma:
+                                    </p>
                                     <ul className="list-inside list-disc space-y-1 pl-4">
-                                        <li><strong>Cadastro:</strong> nome e endereço de e-mail</li>
-                                        <li><strong>Uso:</strong> listas criadas e preferências de navegação dentro da plataforma</li>
+                                        <li>
+                                            <strong>Cadastro:</strong> nome e
+                                            endereço de e-mail
+                                        </li>
+                                        <li>
+                                            <strong>Uso:</strong> listas criadas
+                                            e preferências de navegação dentro
+                                            da plataforma
+                                        </li>
                                     </ul>
-                                    <p>Não coletamos dados de pagamento, documentos pessoais ou informações sensíveis.</p>
+                                    <p>
+                                        Não coletamos dados de pagamento,
+                                        documentos pessoais ou informações
+                                        sensíveis.
+                                    </p>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <h4 className="font-semibold text-gray-900">3. Finalidade do Tratamento</h4>
-                                    <p>Seus dados são utilizados exclusivamente para:</p>
+                                    <h4 className="font-semibold text-gray-900">
+                                        3. Finalidade do Tratamento
+                                    </h4>
+                                    <p>
+                                        Seus dados são utilizados exclusivamente
+                                        para:
+                                    </p>
                                     <ul className="list-inside list-disc space-y-1 pl-4">
-                                        <li>Permitir o acesso à plataforma e suas funcionalidades</li>
-                                        <li>Salvar e gerenciar suas listas de músicas</li>
-                                        <li>Comunicações relacionadas ao serviço, quando necessário</li>
+                                        <li>
+                                            Permitir o acesso à plataforma e
+                                            suas funcionalidades
+                                        </li>
+                                        <li>
+                                            Salvar e gerenciar suas listas de
+                                            músicas
+                                        </li>
+                                        <li>
+                                            Comunicações relacionadas ao
+                                            serviço, quando necessário
+                                        </li>
                                     </ul>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <h4 className="font-semibold text-gray-900">4. Compartilhamento de Dados</h4>
-                                    <p>Seus dados <strong>não são vendidos, alugados ou compartilhados</strong> com terceiros para fins comerciais. Podemos compartilhá-los apenas quando exigido por lei ou por ordem judicial.</p>
+                                    <h4 className="font-semibold text-gray-900">
+                                        4. Compartilhamento de Dados
+                                    </h4>
+                                    <p>
+                                        Seus dados{' '}
+                                        <strong>
+                                            não são vendidos, alugados ou
+                                            compartilhados
+                                        </strong>{' '}
+                                        com terceiros para fins comerciais.
+                                        Podemos compartilhá-los apenas quando
+                                        exigido por lei ou por ordem judicial.
+                                    </p>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <h4 className="font-semibold text-gray-900">5. Cookies</h4>
-                                    <p>Utilizamos apenas cookies técnicos, estritamente necessários para autenticação e funcionamento da plataforma. Não utilizamos cookies de rastreamento ou publicidade.</p>
+                                    <h4 className="font-semibold text-gray-900">
+                                        5. Cookies
+                                    </h4>
+                                    <p>
+                                        Utilizamos apenas cookies técnicos,
+                                        estritamente necessários para
+                                        autenticação e funcionamento da
+                                        plataforma. Não utilizamos cookies de
+                                        rastreamento ou publicidade.
+                                    </p>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <h4 className="font-semibold text-gray-900">6. Segurança</h4>
-                                    <p>Adotamos medidas técnicas de segurança para proteger seus dados contra acesso não autorizado, alteração, divulgação ou destruição.</p>
+                                    <h4 className="font-semibold text-gray-900">
+                                        6. Segurança
+                                    </h4>
+                                    <p>
+                                        Adotamos medidas técnicas de segurança
+                                        para proteger seus dados contra acesso
+                                        não autorizado, alteração, divulgação ou
+                                        destruição.
+                                    </p>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <h4 className="font-semibold text-gray-900">7. Seus Direitos (LGPD)</h4>
+                                    <h4 className="font-semibold text-gray-900">
+                                        7. Seus Direitos (LGPD)
+                                    </h4>
                                     <p>Conforme a LGPD, você tem direito a:</p>
                                     <ul className="list-inside list-disc space-y-1 pl-4">
-                                        <li>Confirmar a existência de tratamento dos seus dados</li>
-                                        <li>Acessar, corrigir ou atualizar seus dados</li>
-                                        <li>Solicitar a exclusão dos seus dados pessoais</li>
-                                        <li>Revogar o consentimento a qualquer momento</li>
+                                        <li>
+                                            Confirmar a existência de tratamento
+                                            dos seus dados
+                                        </li>
+                                        <li>
+                                            Acessar, corrigir ou atualizar seus
+                                            dados
+                                        </li>
+                                        <li>
+                                            Solicitar a exclusão dos seus dados
+                                            pessoais
+                                        </li>
+                                        <li>
+                                            Revogar o consentimento a qualquer
+                                            momento
+                                        </li>
                                         <li>Portabilidade dos dados</li>
                                     </ul>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <h4 className="font-semibold text-gray-900">8. Como Exercer Seus Direitos</h4>
-                                    <p>Para exercer qualquer um dos direitos acima ou tirar dúvidas sobre o tratamento dos seus dados, entre em contato conosco pelo e-mail <strong>contato@viniciusboschetti.com.br</strong>. Responderemos em até 15 dias úteis.</p>
+                                    <h4 className="font-semibold text-gray-900">
+                                        8. Como Exercer Seus Direitos
+                                    </h4>
+                                    <p>
+                                        Para exercer qualquer um dos direitos
+                                        acima ou tirar dúvidas sobre o
+                                        tratamento dos seus dados, entre em
+                                        contato conosco pelo e-mail{' '}
+                                        <strong>
+                                            contato@viniciusboschetti.com.br
+                                        </strong>
+                                        . Responderemos em até 15 dias úteis.
+                                    </p>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <h4 className="font-semibold text-gray-900">9. Encarregado de Dados (DPO)</h4>
-                                    <p>Responsável pelo tratamento de dados: <strong>Vinicius Chagas</strong>, desenvolvedor e mantenedor da plataforma.</p>
+                                    <h4 className="font-semibold text-gray-900">
+                                        9. Encarregado de Dados (DPO)
+                                    </h4>
+                                    <p>
+                                        Responsável pelo tratamento de dados:{' '}
+                                        <strong>Vinicius Chagas</strong>,
+                                        desenvolvedor e mantenedor da
+                                        plataforma.
+                                    </p>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <h4 className="font-semibold text-gray-900">10. Alterações nesta Política</h4>
-                                    <p>Esta política pode ser atualizada periodicamente. Recomendamos revisitá-la ocasionalmente. Alterações significativas serão comunicadas através da plataforma.</p>
+                                    <h4 className="font-semibold text-gray-900">
+                                        10. Alterações nesta Política
+                                    </h4>
+                                    <p>
+                                        Esta política pode ser atualizada
+                                        periodicamente. Recomendamos revisitá-la
+                                        ocasionalmente. Alterações
+                                        significativas serão comunicadas através
+                                        da plataforma.
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -516,8 +805,14 @@ export default function AppLayout({ children }) {
                                 onClick={() => setPrivacidadeModalAberto(false)}
                                 className="w-full rounded-lg px-4 py-2 font-medium text-white transition-colors"
                                 style={{ backgroundColor: '#C7AB65' }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#B89B55'}
-                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#C7AB65'}
+                                onMouseEnter={(e) =>
+                                    (e.currentTarget.style.backgroundColor =
+                                        '#B89B55')
+                                }
+                                onMouseLeave={(e) =>
+                                    (e.currentTarget.style.backgroundColor =
+                                        '#C7AB65')
+                                }
                             >
                                 Entendi
                             </button>
@@ -528,14 +823,17 @@ export default function AppLayout({ children }) {
 
             {/* Barra de Consentimento de Cookies */}
             {cookieConsentVisible && (
-                <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white shadow-lg">
+                <div className="fixed right-0 bottom-0 left-0 z-50 border-t border-gray-200 bg-white shadow-lg">
                     <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
                         <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <p className="text-sm text-gray-600">
-                                Utilizamos cookies para melhorar sua experiência e exibir anúncios relevantes via Google AdSense.
+                                Utilizamos cookies para melhorar sua experiência
+                                e exibir anúncios relevantes via Google AdSense.
                                 Ao continuar navegando, você concorda com nossa{' '}
                                 <button
-                                    onClick={() => setPrivacidadeModalAberto(true)}
+                                    onClick={() =>
+                                        setPrivacidadeModalAberto(true)
+                                    }
                                     className="underline transition-colors"
                                     style={{ color: '#C7AB65' }}
                                 >
@@ -547,8 +845,14 @@ export default function AppLayout({ children }) {
                                 onClick={aceitarCookies}
                                 className="flex-shrink-0 rounded-lg px-5 py-2 text-sm font-medium text-white transition-colors"
                                 style={{ backgroundColor: '#C7AB65' }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#B89B55'}
-                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#C7AB65'}
+                                onMouseEnter={(e) =>
+                                    (e.currentTarget.style.backgroundColor =
+                                        '#B89B55')
+                                }
+                                onMouseLeave={(e) =>
+                                    (e.currentTarget.style.backgroundColor =
+                                        '#C7AB65')
+                                }
                             >
                                 Aceitar e continuar
                             </button>
@@ -560,7 +864,7 @@ export default function AppLayout({ children }) {
             {/* Modal Sobre */}
             {sobreModalAberto && (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+                    className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black p-4"
                     onClick={() => setSobreModalAberto(false)}
                 >
                     <div
@@ -582,10 +886,11 @@ export default function AppLayout({ children }) {
                         <div className="overflow-y-auto p-6">
                             <div className="space-y-4 text-gray-700">
                                 <p className="text-lg">
-                                    Olá! Meu nome é <strong>Vinicius Chagas</strong> e
-                                    criei este site com muito carinho para
-                                    facilitar a vida de quem participa e organiza
-                                    as celebrações litúrgicas.
+                                    Olá! Meu nome é{' '}
+                                    <strong>Vinicius Chagas</strong> e criei
+                                    este site com muito carinho para facilitar a
+                                    vida de quem participa e organiza as
+                                    celebrações litúrgicas.
                                 </p>
 
                                 <div className="space-y-3">
@@ -593,14 +898,15 @@ export default function AppLayout({ children }) {
                                         Por que criei o Cânticos de Missa?
                                     </h4>
                                     <p>
-                                        Como católico praticante e desenvolvedor,
-                                        percebi que muitas pessoas tinham
-                                        dificuldade em encontrar as letras dos
-                                        cânticos durante a missa ou ao preparar as
-                                        celebrações. Havia a necessidade de uma
-                                        ferramenta simples, organizada e acessível
-                                        para consultar o repertório completo do
-                                        Hinário Litúrgico da CNBB.
+                                        Como católico praticante e
+                                        desenvolvedor, percebi que muitas
+                                        pessoas tinham dificuldade em encontrar
+                                        as letras dos cânticos durante a missa
+                                        ou ao preparar as celebrações. Havia a
+                                        necessidade de uma ferramenta simples,
+                                        organizada e acessível para consultar o
+                                        repertório completo do Hinário Litúrgico
+                                        da CNBB.
                                     </p>
                                 </div>
 
@@ -628,8 +934,8 @@ export default function AppLayout({ children }) {
                                             personalizadas para cada celebração
                                         </li>
                                         <li>
-                                            Compartilhamento fácil das listas com
-                                            a equipe de liturgia
+                                            Compartilhamento fácil das listas
+                                            com a equipe de liturgia
                                         </li>
                                     </ul>
                                 </div>
@@ -639,10 +945,10 @@ export default function AppLayout({ children }) {
                                         Gratuito e Sem Fins Lucrativos
                                     </h4>
                                     <p>
-                                        Este projeto é totalmente gratuito e feito
-                                        como serviço à comunidade. Não há
-                                        interesses comerciais, apenas o desejo de
-                                        facilitar a participação ativa nas
+                                        Este projeto é totalmente gratuito e
+                                        feito como serviço à comunidade. Não há
+                                        interesses comerciais, apenas o desejo
+                                        de facilitar a participação ativa nas
                                         celebrações litúrgicas.
                                     </p>
                                 </div>
@@ -652,25 +958,30 @@ export default function AppLayout({ children }) {
                                         Apoie Este Projeto
                                     </h4>
                                     <p>
-                                        Se este site está sendo útil para você e sua
-                                        comunidade, considere fazer uma doação
-                                        voluntária. Qualquer valor ajuda a manter o
-                                        projeto funcionando e sempre gratuito para
-                                        todos!
+                                        Se este site está sendo útil para você e
+                                        sua comunidade, considere fazer uma
+                                        doação voluntária. Qualquer valor ajuda
+                                        a manter o projeto funcionando e sempre
+                                        gratuito para todos!
                                     </p>
                                     <div className="flex justify-center">
                                         <button
-                                            onClick={() => setMostrarQRCode(!mostrarQRCode)}
+                                            onClick={() =>
+                                                setMostrarQRCode(!mostrarQRCode)
+                                            }
                                             className="flex items-center gap-2 rounded-lg bg-green-600 px-6 py-3 font-medium text-white transition-colors hover:bg-green-700"
                                         >
                                             <Heart className="h-5 w-5" />
-                                            {mostrarQRCode ? 'Fechar' : 'Doar via PIX'}
+                                            {mostrarQRCode
+                                                ? 'Fechar'
+                                                : 'Doar via PIX'}
                                         </button>
                                     </div>
                                     {mostrarQRCode && (
                                         <div className="rounded-lg bg-gray-50 p-4">
                                             <p className="mb-3 text-center text-sm font-medium text-gray-700">
-                                                Escaneie o QR Code com seu app de banco:
+                                                Escaneie o QR Code com seu app
+                                                de banco:
                                             </p>
                                             <div className="flex justify-center">
                                                 {/* Substitua o src abaixo pelo caminho da sua imagem QR Code */}
@@ -692,13 +1003,26 @@ export default function AppLayout({ children }) {
                                                 />
                                                 <button
                                                     onClick={() => {
-                                                        navigator.clipboard.writeText('d5b18a8e-481a-4e46-aaeb-32d64ead16ad');
-                                                        alert('Chave PIX copiada!');
+                                                        navigator.clipboard.writeText(
+                                                            'd5b18a8e-481a-4e46-aaeb-32d64ead16ad',
+                                                        );
+                                                        alert(
+                                                            'Chave PIX copiada!',
+                                                        );
                                                     }}
                                                     className="rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
-                                                    style={{ backgroundColor: '#C7AB65' }}
-                                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#B89B55'}
-                                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#C7AB65'}
+                                                    style={{
+                                                        backgroundColor:
+                                                            '#C7AB65',
+                                                    }}
+                                                    onMouseEnter={(e) =>
+                                                        (e.currentTarget.style.backgroundColor =
+                                                            '#B89B55')
+                                                    }
+                                                    onMouseLeave={(e) =>
+                                                        (e.currentTarget.style.backgroundColor =
+                                                            '#C7AB65')
+                                                    }
                                                 >
                                                     Copiar
                                                 </button>
@@ -707,10 +1031,17 @@ export default function AppLayout({ children }) {
                                     )}
                                 </div>
 
-                                <div className="rounded-lg p-4" style={{ backgroundColor: '#F5F0E8' }}>
-                                    <p className="text-center text-sm italic" style={{ color: '#8B7A45' }}>
-                                        "Cantai ao Senhor um cântico novo, cantai
-                                        ao Senhor, terra inteira!" - Salmo 96:1
+                                <div
+                                    className="rounded-lg p-4"
+                                    style={{ backgroundColor: '#F5F0E8' }}
+                                >
+                                    <p
+                                        className="text-center text-sm italic"
+                                        style={{ color: '#8B7A45' }}
+                                    >
+                                        "Cantai ao Senhor um cântico novo,
+                                        cantai ao Senhor, terra inteira!" -
+                                        Salmo 96:1
                                     </p>
                                 </div>
 
@@ -726,8 +1057,14 @@ export default function AppLayout({ children }) {
                                 onClick={() => setSobreModalAberto(false)}
                                 className="w-full rounded-lg px-4 py-2 font-medium text-white transition-colors"
                                 style={{ backgroundColor: '#C7AB65' }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#B89B55'}
-                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#C7AB65'}
+                                onMouseEnter={(e) =>
+                                    (e.currentTarget.style.backgroundColor =
+                                        '#B89B55')
+                                }
+                                onMouseLeave={(e) =>
+                                    (e.currentTarget.style.backgroundColor =
+                                        '#C7AB65')
+                                }
                             >
                                 Fechar
                             </button>

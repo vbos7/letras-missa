@@ -21,7 +21,7 @@ class SolicitacaoMusica extends Model
     ];
 
     protected $casts = [
-        'dados' => 'array',
+        'dados'       => 'array',
         'reviewed_at' => 'datetime',
     ];
 

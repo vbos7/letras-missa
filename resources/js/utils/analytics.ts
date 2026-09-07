@@ -15,7 +15,7 @@ interface TrackEventParams {
     language?: 'pt' | 'en' | 'es' | 'fr';
     players_count?: number;
     two_impostors?: boolean;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
 }
 
 const sessionId = `${Date.now()}-${Math.random()}`;

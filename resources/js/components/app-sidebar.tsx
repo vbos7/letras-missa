@@ -9,7 +9,15 @@ import {
 } from '@/components/ui/sidebar';
 import { type NavItem, type SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
-import { BookOpen, ClipboardList, FileAudio, Folder, LayoutGrid, Music, Palette } from 'lucide-react';
+import {
+    BookOpen,
+    ClipboardList,
+    FileAudio,
+    Folder,
+    LayoutGrid,
+    Music,
+    Palette,
+} from 'lucide-react';
 
 const footerNavItems: NavItem[] = [
     {
@@ -25,7 +33,9 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
-    const { auth, solicitacoes_pendentes } = usePage<SharedData & { solicitacoes_pendentes: number }>().props;
+    const { auth, solicitacoes_pendentes } = usePage<
+        SharedData & { solicitacoes_pendentes: number }
+    >().props;
     const user = auth.user;
     const isAdmin = Boolean(user?.is_admin);
     const isColaborador = Boolean(user?.is_colaborador);

@@ -26,7 +26,7 @@ class TemaController extends Controller
             ->paginate(50);
 
         return Inertia::render('temas/show', [
-            'tema' => $tema,
+            'tema'    => $tema,
             'musicas' => $musicas,
         ]);
     }

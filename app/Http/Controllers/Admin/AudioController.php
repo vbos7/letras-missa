@@ -20,6 +20,7 @@ class AudioController extends Controller
 
         // Instalações via "pip install --user" ficam em ~/Library/Python/X.Y/bin
         $home = $_SERVER['HOME'] ?? getenv('HOME') ?: '/root';
+
         foreach (glob($home . '/Library/Python/*/bin/' . $name) ?: [] as $path) {
             $candidates[] = $path;
         }
@@ -40,14 +41,16 @@ class AudioController extends Controller
         // Números das músicas que possuem arquivo de áudio (a partir do disco).
         // O arquivo é nomeado pelo número da música (ex.: audio/123.mp3).
         $numerosComAudio = [];
+
         foreach (glob(public_path('audio') . '/*.mp3') ?: [] as $file) {
             $numero = (int) pathinfo($file, PATHINFO_FILENAME);
+
             if ($numero > 0) {
                 $numerosComAudio[] = $numero;
             }
         }
 
-        $query = Musica::query()->orderBy('numero');
+        $query = Musica::query()->with('audioInfo')->orderBy('numero');
 
         if ($request->filled('search')) {
             $query->search($request->search);
@@ -60,11 +63,12 @@ class AudioController extends Controller
         }
 
         $musicas = $query->paginate(20)->withQueryString()->through(fn ($m) => [
-            'id'        => $m->id,
-            'numero'    => $m->numero,
-            'titulo'    => $m->titulo,
-            'autor'     => $m->autor,
-            'has_audio' => in_array($m->numero, $numerosComAudio, true),
+            'id'         => $m->id,
+            'numero'     => $m->numero,
+            'titulo'     => $m->titulo,
+            'autor'      => $m->autor,
+            'has_audio'  => in_array($m->numero, $numerosComAudio, true),
+            'audio_info' => $m->audioInfo,
         ]);
 
         return Inertia::render('admin/audio/index', [
@@ -138,5 +142,26 @@ class AudioController extends Controller
         unlink($path);
 
         return back()->with('success', "Áudio #{$musica->numero} {$musica->titulo} excluído.");
+    }
+
+    public function atualizarCreditos(Request $request, Musica $musica)
+    {
+        $validated = $request->validate([
+            'artista'         => 'nullable|string|max:255',
+            'compositor'      => 'nullable|string|max:255',
+            'album'           => 'nullable|string|max:255',
+            'gravadora'       => 'nullable|string|max:255',
+            'distribuidora'   => 'nullable|string|max:255',
+            'data_lancamento' => 'nullable|string|max:30',
+            'fonte_url'       => 'nullable|url|max:2048',
+            'descricao'       => 'nullable|string|max:5000',
+        ]);
+
+        $musica->audioInfo()->updateOrCreate(
+            ['musica_id' => $musica->id],
+            $validated,
+        );
+
+        return back()->with('success', "Créditos de #{$musica->numero} {$musica->titulo} salvos.");
     }
 }

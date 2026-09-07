@@ -2,8 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\Lista;
-use App\Models\User;
+use App\Models\{Lista, User};
 
 class ListaPolicy
 {

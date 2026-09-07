@@ -28,11 +28,12 @@ class SolicitacaoController extends Controller
         }
 
         if ($solicitacao->tipo === 'edicao') {
-            $dados = $solicitacao->dados;
+            $dados   = $solicitacao->dados;
             $temaIds = $dados['tema_ids'] ?? [];
             unset($dados['tema_ids']);
 
             $solicitacao->musica->update($dados);
+
             if ($temaIds) {
                 $solicitacao->musica->temas()->sync($temaIds);
             }
@@ -46,7 +47,7 @@ class SolicitacaoController extends Controller
         }
 
         $solicitacao->update([
-            'status' => 'aprovado',
+            'status'      => 'aprovado',
             'reviewed_by' => auth()->id(),
             'reviewed_at' => now(),
         ]);
@@ -65,8 +66,8 @@ class SolicitacaoController extends Controller
         ]);
 
         $solicitacao->update([
-            'status' => 'rejeitado',
-            'nota_admin' => $validated['nota_admin'] ?? null,
+            'status'      => 'rejeitado',
+            'nota_admin'  => $validated['nota_admin'] ?? null,
             'reviewed_by' => auth()->id(),
             'reviewed_at' => now(),
         ]);

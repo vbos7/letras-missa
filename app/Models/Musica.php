@@ -30,6 +30,11 @@ class Musica extends Model
         return $this->belongsToMany(Tema::class, 'musica_tema')->withTimestamps();
     }
 
+    public function audioInfo(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(AudioInfo::class);
+    }
+
     public function listas(): BelongsToMany
     {
         return $this->belongsToMany(Lista::class, 'lista_musicas')

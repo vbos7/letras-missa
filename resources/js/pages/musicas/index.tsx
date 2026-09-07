@@ -8,15 +8,133 @@ import {
 } from '@/components/ui/select';
 import { normalizarBusca } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
-import { Filter, Music2, Search, X } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import {
+    ChevronLeft,
+    ChevronRight,
+    Filter,
+    Music2,
+    Search,
+    X,
+} from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 
-export default function Index({ musicas, temas, autores }) {
+const POR_PAGINA = 20;
+
+function Paginacao({
+    paginaAtual,
+    totalPaginas,
+    onMudar,
+}: {
+    paginaAtual: number;
+    totalPaginas: number;
+    onMudar: (p: number) => void;
+}) {
+    if (totalPaginas <= 1) return null;
+
+    const paginas: (number | 'ellipsis')[] = [];
+    if (totalPaginas <= 7) {
+        for (let i = 1; i <= totalPaginas; i++) paginas.push(i);
+    } else {
+        paginas.push(1);
+        if (paginaAtual > 3) paginas.push('ellipsis');
+        for (
+            let i = Math.max(2, paginaAtual - 1);
+            i <= Math.min(totalPaginas - 1, paginaAtual + 1);
+            i++
+        ) {
+            paginas.push(i);
+        }
+        if (paginaAtual < totalPaginas - 2) paginas.push('ellipsis');
+        paginas.push(totalPaginas);
+    }
+
+    return (
+        <div className="flex flex-wrap items-center justify-center gap-1">
+            <button
+                onClick={() => onMudar(paginaAtual - 1)}
+                disabled={paginaAtual === 1}
+                className="flex h-9 items-center gap-1 rounded-lg px-3 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 disabled:pointer-events-none disabled:opacity-40"
+                aria-label="Página anterior"
+            >
+                <ChevronLeft className="h-4 w-4" />
+                <span className="hidden sm:inline">Anterior</span>
+            </button>
+
+            {paginas.map((p, i) =>
+                p === 'ellipsis' ? (
+                    <span key={`e-${i}`} className="px-2 text-sm text-gray-400">
+                        …
+                    </span>
+                ) : (
+                    <button
+                        key={p}
+                        onClick={() => onMudar(p)}
+                        aria-current={p === paginaAtual ? 'page' : undefined}
+                        className="flex h-9 min-w-9 items-center justify-center rounded-lg px-3 text-sm font-medium transition-colors"
+                        style={
+                            p === paginaAtual
+                                ? { backgroundColor: '#C7AB65', color: 'white' }
+                                : { color: '#374151' }
+                        }
+                        onMouseEnter={(e) => {
+                            if (p !== paginaAtual)
+                                e.currentTarget.style.backgroundColor =
+                                    '#F5F0E8';
+                        }}
+                        onMouseLeave={(e) => {
+                            if (p !== paginaAtual)
+                                e.currentTarget.style.backgroundColor =
+                                    'transparent';
+                        }}
+                    >
+                        {p}
+                    </button>
+                ),
+            )}
+
+            <button
+                onClick={() => onMudar(paginaAtual + 1)}
+                disabled={paginaAtual === totalPaginas}
+                className="flex h-9 items-center gap-1 rounded-lg px-3 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 disabled:pointer-events-none disabled:opacity-40"
+                aria-label="Próxima página"
+            >
+                <span className="hidden sm:inline">Próxima</span>
+                <ChevronRight className="h-4 w-4" />
+            </button>
+        </div>
+    );
+}
+
+interface Tema {
+    id: number;
+    nome: string;
+}
+
+interface Musica {
+    id: number;
+    numero: number;
+    titulo: string;
+    letra: string;
+    autor?: string | null;
+    tom?: string | null;
+    temas?: Tema[];
+}
+
+export default function Index({
+    musicas,
+    temas,
+    autores,
+}: {
+    musicas: Musica[];
+    temas: Tema[];
+    autores: string[];
+}) {
     const [busca, setBusca] = useState('');
     const [modalAberto, setModalAberto] = useState(false);
     const [temaSelecionado, setTemaSelecionado] = useState('');
     const [autorSelecionado, setAutorSelecionado] = useState('');
     const [ordenacao, setOrdenacao] = useState('numero');
+    const [paginaAtual, setPaginaAtual] = useState(1);
 
     // Filtragem e ordenação no frontend
     const musicasFiltradas = useMemo(() => {
@@ -66,6 +184,27 @@ export default function Index({ musicas, temas, autores }) {
 
         return resultado;
     }, [musicas, busca, temaSelecionado, autorSelecionado, ordenacao]);
+
+    // Paginação (client-side, sobre o resultado já filtrado)
+    const totalPaginas = Math.max(
+        1,
+        Math.ceil(musicasFiltradas.length / POR_PAGINA),
+    );
+
+    // Volta para a primeira página sempre que os filtros mudam
+    useEffect(() => {
+        setPaginaAtual(1);
+    }, [busca, temaSelecionado, autorSelecionado, ordenacao]);
+
+    const musicasPagina = musicasFiltradas.slice(
+        (paginaAtual - 1) * POR_PAGINA,
+        paginaAtual * POR_PAGINA,
+    );
+
+    const mudarPagina = (p: number) => {
+        setPaginaAtual(Math.min(Math.max(1, p), totalPaginas));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     const limparFiltros = () => {
         setBusca('');
@@ -213,9 +352,20 @@ export default function Index({ musicas, temas, autores }) {
                     </div>
                 )}
 
+                {/* Paginação (abaixo do filtro) */}
+                {musicasFiltradas.length > POR_PAGINA && (
+                    <div className="mb-4">
+                        <Paginacao
+                            paginaAtual={paginaAtual}
+                            totalPaginas={totalPaginas}
+                            onMudar={mudarPagina}
+                        />
+                    </div>
+                )}
+
                 {/* Lista de Músicas */}
                 <div className="space-y-3">
-                    {musicasFiltradas.map((musica) => (
+                    {musicasPagina.map((musica) => (
                         <Link
                             key={musica.id}
                             href={`/musicas/${musica.id}`}
@@ -274,6 +424,20 @@ export default function Index({ musicas, temas, autores }) {
                         >
                             Limpar filtros
                         </button>
+                    </div>
+                )}
+
+                {/* Paginação (final da página) */}
+                {totalPaginas > 1 && (
+                    <div className="mt-6">
+                        <Paginacao
+                            paginaAtual={paginaAtual}
+                            totalPaginas={totalPaginas}
+                            onMudar={mudarPagina}
+                        />
+                        <p className="mt-2 text-center text-sm text-gray-500">
+                            Página {paginaAtual} de {totalPaginas}
+                        </p>
                     </div>
                 )}
             </div>

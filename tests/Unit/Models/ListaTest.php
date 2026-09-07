@@ -1,14 +1,12 @@
 <?php
 
-use App\Models\Lista;
-use App\Models\Musica;
-use App\Models\User;
+use App\Models\{Lista, Musica, User};
 
 it('gera token automaticamente ao criar', function () {
-    $user = User::factory()->create();
+    $user  = User::factory()->create();
     $lista = Lista::create([
         'user_id' => $user->id,
-        'nome' => 'Missa Domingo',
+        'nome'    => 'Missa Domingo',
     ]);
 
     expect($lista->token)->not->toBeNull()
@@ -16,19 +14,19 @@ it('gera token automaticamente ao criar', function () {
 });
 
 it('pertence a um usuário', function () {
-    $user = User::factory()->create();
+    $user  = User::factory()->create();
     $lista = Lista::factory()->create(['user_id' => $user->id]);
 
     expect($lista->user->id)->toBe($user->id);
 });
 
 it('tem relacionamento com músicas via pivot', function () {
-    $lista = Lista::factory()->create();
+    $lista   = Lista::factory()->create();
     $musicas = Musica::factory()->count(3)->create();
 
     foreach ($musicas as $i => $musica) {
         $lista->musicas()->attach($musica->id, [
-            'ordem' => $i + 1,
+            'ordem'      => $i + 1,
             'observacao' => "Nota {$i}",
         ]);
     }

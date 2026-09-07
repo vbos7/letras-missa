@@ -1,14 +1,13 @@
 <?php
 
 use App\Http\Middleware\{EnsureUserIsAdmin, EnsureUserIsColaborador, HandleAppearance, HandleInertiaRequests};
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\{Exceptions, Middleware};
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Auth\Access\AuthorizationException;
 use Inertia\Inertia;
+use Symfony\Component\HttpKernel\Exception\{AccessDeniedHttpException, NotFoundHttpException};
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -26,7 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'admin' => EnsureUserIsAdmin::class,
+            'admin'       => EnsureUserIsAdmin::class,
             'colaborador' => EnsureUserIsColaborador::class,
         ]);
     })
@@ -52,7 +51,7 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($exception instanceof AccessDeniedHttpException ||
                 $exception instanceof AuthorizationException) {
                 return Inertia::render('errors/403', [
-                    'status' => 403,
+                    'status'  => 403,
                     'message' => $exception->getMessage() ?: 'Você não tem permissão para acessar este recurso.',
                 ])
                 ->toResponse($request)

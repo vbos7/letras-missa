@@ -1,9 +1,6 @@
 <?php
 
-use App\Models\Lista;
-use App\Models\Musica;
-use App\Models\Tema;
-use App\Models\User;
+use App\Models\{Lista, Musica, Tema, User};
 
 beforeEach(function () {
     $this->admin = User::factory()->create(['is_admin' => true]);
@@ -38,11 +35,11 @@ it('cria uma nova música', function () {
 
     $this->actingAs($this->admin)
         ->post(route('admin.musicas.store'), [
-            'numero' => 100,
-            'titulo' => 'Santo',
-            'letra' => 'Santo, Santo, Santo...',
-            'autor' => 'Autor Teste',
-            'tom' => 'G',
+            'numero'   => 100,
+            'titulo'   => 'Santo',
+            'letra'    => 'Santo, Santo, Santo...',
+            'autor'    => 'Autor Teste',
+            'tom'      => 'G',
             'tema_ids' => [$tema->id],
         ])
         ->assertRedirect(route('admin.musicas.index'));
@@ -65,9 +62,9 @@ it('valida número único da música', function () {
 
     $this->actingAs($this->admin)
         ->post(route('admin.musicas.store'), [
-            'numero' => 100,
-            'titulo' => 'Outra Música',
-            'letra' => 'Letra...',
+            'numero'   => 100,
+            'titulo'   => 'Outra Música',
+            'letra'    => 'Letra...',
             'tema_ids' => [$tema->id],
         ])
         ->assertSessionHasErrors('numero');
@@ -87,9 +84,9 @@ it('atualiza uma música', function () {
 
     $this->actingAs($this->admin)
         ->put(route('admin.musicas.update', $musica), [
-            'numero' => $musica->numero,
-            'titulo' => 'Título Atualizado',
-            'letra' => 'Nova letra...',
+            'numero'   => $musica->numero,
+            'titulo'   => 'Título Atualizado',
+            'letra'    => 'Nova letra...',
             'tema_ids' => [$temaId],
         ])
         ->assertRedirect(route('admin.musicas.index'));
@@ -109,7 +106,7 @@ it('exclui uma música sem listas', function () {
 
 it('impede exclusão de música que está em uma lista', function () {
     $musica = Musica::factory()->create();
-    $lista = Lista::factory()->create();
+    $lista  = Lista::factory()->create();
     $lista->musicas()->attach($musica->id, ['ordem' => 1]);
 
     $this->actingAs($this->admin)

@@ -1,6 +1,4 @@
-import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Badge } from '@/components/ui/badge';
 import {
     Card,
     CardContent,
@@ -16,15 +14,10 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import {
-    Music,
-    Users,
-    List,
-    Eye,
-    TrendingUp,
-    Palette,
-} from 'lucide-react';
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
+import { Head } from '@inertiajs/react';
+import { Eye, List, Music, Palette, TrendingUp, Users } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -170,12 +163,18 @@ export default function AdminDashboard({
                                 <CardTitle className="text-sm font-medium">
                                     {stat.title}
                                 </CardTitle>
-                                <div className={`rounded-lg p-2 ${stat.bgColor}`}>
-                                    <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                                <div
+                                    className={`rounded-lg p-2 ${stat.bgColor}`}
+                                >
+                                    <stat.icon
+                                        className={`h-4 w-4 ${stat.color}`}
+                                    />
                                 </div>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{stat.value}</div>
+                                <div className="text-2xl font-bold">
+                                    {stat.value}
+                                </div>
                                 <p className="text-xs text-muted-foreground">
                                     {stat.description}
                                 </p>
@@ -231,7 +230,9 @@ export default function AdminDashboard({
                                                 )}
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                <Badge>{musica.vezes_usada}</Badge>
+                                                <Badge>
+                                                    {musica.vezes_usada}
+                                                </Badge>
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -284,7 +285,9 @@ export default function AdminDashboard({
                                                 {lista.usuario}
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                <Badge>{lista.visualizacoes}</Badge>
+                                                <Badge>
+                                                    {lista.visualizacoes}
+                                                </Badge>
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -334,7 +337,9 @@ export default function AdminDashboard({
                                                 {usuario.email}
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                <Badge>{usuario.total_listas}</Badge>
+                                                <Badge>
+                                                    {usuario.total_listas}
+                                                </Badge>
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -361,13 +366,17 @@ export default function AdminDashboard({
                                         <div className="flex items-center gap-2">
                                             <div
                                                 className="h-3 w-3 rounded-full"
-                                                style={{ backgroundColor: tema.cor }}
+                                                style={{
+                                                    backgroundColor: tema.cor,
+                                                }}
                                             />
                                             <span className="text-sm font-medium">
                                                 {tema.nome}
                                             </span>
                                         </div>
-                                        <Badge variant="secondary">{tema.total}</Badge>
+                                        <Badge variant="secondary">
+                                            {tema.total}
+                                        </Badge>
                                     </div>
                                 ))}
                             </div>
@@ -379,29 +388,40 @@ export default function AdminDashboard({
                 <div className="grid gap-6 lg:grid-cols-2">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Novos Usuários (últimos 30 dias)</CardTitle>
+                            <CardTitle>
+                                Novos Usuários (últimos 30 dias)
+                            </CardTitle>
                             <CardDescription>
-                                Total: {crescimentoUsuarios.reduce((acc, item) => acc + item.total, 0)} novos usuários
+                                Total:{' '}
+                                {crescimentoUsuarios.reduce(
+                                    (acc, item) => acc + item.total,
+                                    0,
+                                )}{' '}
+                                novos usuários
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
                             {crescimentoUsuarios.length > 0 ? (
                                 <div className="space-y-2">
-                                    {crescimentoUsuarios.slice(-10).map((item, index) => (
-                                        <div
-                                            key={index}
-                                            className="flex items-center justify-between text-sm"
-                                        >
-                                            <span className="text-muted-foreground">
-                                                {new Date(item.data).toLocaleDateString(
-                                                    'pt-BR',
-                                                )}
-                                            </span>
-                                            <Badge variant="secondary">
-                                                {item.total}
-                                            </Badge>
-                                        </div>
-                                    ))}
+                                    {crescimentoUsuarios
+                                        .slice(-10)
+                                        .map((item, index) => (
+                                            <div
+                                                key={index}
+                                                className="flex items-center justify-between text-sm"
+                                            >
+                                                <span className="text-muted-foreground">
+                                                    {new Date(
+                                                        item.data,
+                                                    ).toLocaleDateString(
+                                                        'pt-BR',
+                                                    )}
+                                                </span>
+                                                <Badge variant="secondary">
+                                                    {item.total}
+                                                </Badge>
+                                            </div>
+                                        ))}
                                 </div>
                             ) : (
                                 <p className="text-sm text-muted-foreground">
@@ -413,29 +433,40 @@ export default function AdminDashboard({
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Novas Listas (últimos 30 dias)</CardTitle>
+                            <CardTitle>
+                                Novas Listas (últimos 30 dias)
+                            </CardTitle>
                             <CardDescription>
-                                Total: {crescimentoListas.reduce((acc, item) => acc + item.total, 0)} novas listas
+                                Total:{' '}
+                                {crescimentoListas.reduce(
+                                    (acc, item) => acc + item.total,
+                                    0,
+                                )}{' '}
+                                novas listas
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
                             {crescimentoListas.length > 0 ? (
                                 <div className="space-y-2">
-                                    {crescimentoListas.slice(-10).map((item, index) => (
-                                        <div
-                                            key={index}
-                                            className="flex items-center justify-between text-sm"
-                                        >
-                                            <span className="text-muted-foreground">
-                                                {new Date(item.data).toLocaleDateString(
-                                                    'pt-BR',
-                                                )}
-                                            </span>
-                                            <Badge variant="secondary">
-                                                {item.total}
-                                            </Badge>
-                                        </div>
-                                    ))}
+                                    {crescimentoListas
+                                        .slice(-10)
+                                        .map((item, index) => (
+                                            <div
+                                                key={index}
+                                                className="flex items-center justify-between text-sm"
+                                            >
+                                                <span className="text-muted-foreground">
+                                                    {new Date(
+                                                        item.data,
+                                                    ).toLocaleDateString(
+                                                        'pt-BR',
+                                                    )}
+                                                </span>
+                                                <Badge variant="secondary">
+                                                    {item.total}
+                                                </Badge>
+                                            </div>
+                                        ))}
                                 </div>
                             ) : (
                                 <p className="text-sm text-muted-foreground">

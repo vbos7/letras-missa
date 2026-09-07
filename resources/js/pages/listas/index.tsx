@@ -1,8 +1,7 @@
 import AppLayout from '@/components/app-layout';
 import { ListaGuiadaDialog } from '@/components/lista-guiada-dialog';
-import { Link, router } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import {
-    BookOpen,
     Calendar,
     Edit,
     List,
@@ -13,13 +12,30 @@ import {
     Trash2,
     X,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, type ComponentProps } from 'react';
 
-export default function Index({ listas, temas }) {
+interface Lista {
+    id: number;
+    nome: string;
+    token: string;
+    created_at: string;
+    musicas_count: number;
+    visualizacoes: number;
+}
+
+type TemasGuiada = ComponentProps<typeof ListaGuiadaDialog>['temas'];
+
+export default function Index({
+    listas,
+    temas,
+}: {
+    listas: Lista[];
+    temas: TemasGuiada;
+}) {
     const [modalEscolha, setModalEscolha] = useState(false);
     const [dialogGuiado, setDialogGuiado] = useState(false);
 
-    const handleCompartilhar = async (lista) => {
+    const handleCompartilhar = async (lista: Lista) => {
         const url = `${window.location.origin}/lista/${lista.token}`;
 
         if (navigator.share) {
@@ -54,7 +70,7 @@ export default function Index({ listas, temas }) {
         }
     };
 
-    const abrirLista = (token) => {
+    const abrirLista = (token: string) => {
         window.open(`/lista/${token}`, '_blank');
     };
 

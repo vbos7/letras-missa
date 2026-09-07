@@ -1,10 +1,9 @@
 <?php
 
-use App\Models\Lista;
-use App\Models\Musica;
+use App\Models\{Lista, Musica};
 
 it('exibe uma lista compartilhada pública', function () {
-    $lista = Lista::factory()->create(['publica' => true]);
+    $lista  = Lista::factory()->create(['publica' => true]);
     $musica = Musica::factory()->create();
     $lista->musicas()->attach($musica->id, ['ordem' => 1]);
 

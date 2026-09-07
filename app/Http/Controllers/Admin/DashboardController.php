@@ -3,11 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Lista;
-use App\Models\Musica;
-use App\Models\SolicitacaoMusica;
-use App\Models\Tema;
-use App\Models\User;
+use App\Models\{Lista, Musica, SolicitacaoMusica, Tema, User};
 use Inertia\Inertia;
 
 class DashboardController extends Controller
@@ -16,14 +12,14 @@ class DashboardController extends Controller
     {
         // Estatísticas gerais
         $stats = [
-            'total_musicas' => Musica::count(),
-            'total_musicas_ativas' => Musica::where('ativo', true)->count(),
-            'total_usuarios' => User::count(),
-            'total_admins' => User::where('is_admin', true)->count(),
-            'total_listas' => Lista::count(),
-            'total_listas_publicas' => Lista::where('publica', true)->count(),
-            'total_visualizacoes' => Lista::sum('visualizacoes'),
-            'total_temas' => Tema::count(),
+            'total_musicas'          => Musica::count(),
+            'total_musicas_ativas'   => Musica::where('ativo', true)->count(),
+            'total_usuarios'         => User::count(),
+            'total_admins'           => User::where('is_admin', true)->count(),
+            'total_listas'           => Lista::count(),
+            'total_listas_publicas'  => Lista::where('publica', true)->count(),
+            'total_visualizacoes'    => Lista::sum('visualizacoes'),
+            'total_temas'            => Tema::count(),
             'solicitacoes_pendentes' => SolicitacaoMusica::where('status', 'pendente')->count(),
         ];
 
@@ -35,11 +31,11 @@ class DashboardController extends Controller
             ->get()
             ->map(function ($musica) {
                 return [
-                    'id' => $musica->id,
-                    'numero' => $musica->numero,
-                    'titulo' => $musica->titulo,
-                    'autor' => $musica->autor,
-                    'tema' => $musica->temas->first()?->nome,
+                    'id'          => $musica->id,
+                    'numero'      => $musica->numero,
+                    'titulo'      => $musica->titulo,
+                    'autor'       => $musica->autor,
+                    'tema'        => $musica->temas->first()?->nome,
                     'vezes_usada' => $musica->listas_count,
                 ];
             });
@@ -51,12 +47,12 @@ class DashboardController extends Controller
             ->get()
             ->map(function ($lista) {
                 return [
-                    'id' => $lista->id,
-                    'nome' => $lista->nome,
-                    'usuario' => $lista->user->name,
+                    'id'            => $lista->id,
+                    'nome'          => $lista->nome,
+                    'usuario'       => $lista->user->name,
                     'visualizacoes' => $lista->visualizacoes,
-                    'publica' => $lista->publica,
-                    'created_at' => $lista->created_at->format('d/m/Y'),
+                    'publica'       => $lista->publica,
+                    'created_at'    => $lista->created_at->format('d/m/Y'),
                 ];
             });
 
@@ -67,11 +63,11 @@ class DashboardController extends Controller
             ->get()
             ->map(function ($user) {
                 return [
-                    'id' => $user->id,
-                    'nome' => $user->name,
-                    'email' => $user->email,
+                    'id'           => $user->id,
+                    'nome'         => $user->name,
+                    'email'        => $user->email,
                     'total_listas' => $user->listas_count,
-                    'is_admin' => $user->is_admin,
+                    'is_admin'     => $user->is_admin,
                 ];
             });
 
@@ -81,8 +77,8 @@ class DashboardController extends Controller
             ->get()
             ->map(function ($tema) {
                 return [
-                    'nome' => $tema->nome,
-                    'cor' => $tema->cor,
+                    'nome'  => $tema->nome,
+                    'cor'   => $tema->cor,
                     'total' => $tema->musicas_count,
                 ];
             });
@@ -101,21 +97,21 @@ class DashboardController extends Controller
             ->get();
 
         // Médias
-        $totalUsuarios = User::count();
-        $totalListas = Lista::count();
-        $mediaListasPorUsuario = $totalUsuarios > 0 ? round($totalListas / $totalUsuarios, 2) : 0;
+        $totalUsuarios              = User::count();
+        $totalListas                = Lista::count();
+        $mediaListasPorUsuario      = $totalUsuarios > 0 ? round($totalListas / $totalUsuarios, 2) : 0;
         $mediaVisualizacoesPorLista = Lista::where('visualizacoes', '>', 0)->avg('visualizacoes') ?? 0;
 
         return Inertia::render('admin/dashboard', [
-            'stats' => $stats,
-            'musicasMaisUsadas' => $musicasMaisUsadas,
+            'stats'                  => $stats,
+            'musicasMaisUsadas'      => $musicasMaisUsadas,
             'listasMaisVisualizadas' => $listasMaisVisualizadas,
-            'usuariosMaisAtivos' => $usuariosMaisAtivos,
-            'musicasPorTema' => $musicasPorTema,
-            'crescimentoUsuarios' => $crescimentoUsuarios,
-            'crescimentoListas' => $crescimentoListas,
-            'medias' => [
-                'listas_por_usuario' => round($mediaListasPorUsuario, 2),
+            'usuariosMaisAtivos'     => $usuariosMaisAtivos,
+            'musicasPorTema'         => $musicasPorTema,
+            'crescimentoUsuarios'    => $crescimentoUsuarios,
+            'crescimentoListas'      => $crescimentoListas,
+            'medias'                 => [
+                'listas_por_usuario'      => round($mediaListasPorUsuario, 2),
                 'visualizacoes_por_lista' => round($mediaVisualizacoesPorLista, 2),
             ],
         ]);

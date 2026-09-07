@@ -8,7 +8,7 @@ export default function Create() {
         publica: true,
     });
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         post('/listas');
     };
@@ -22,8 +22,12 @@ export default function Create() {
                         href="/listas"
                         className="mb-4 inline-flex items-center transition-colors"
                         style={{ color: '#C7AB65' }}
-                        onMouseEnter={(e) => e.currentTarget.style.color = '#B89B55'}
-                        onMouseLeave={(e) => e.currentTarget.style.color = '#C7AB65'}
+                        onMouseEnter={(e) =>
+                            (e.currentTarget.style.color = '#B89B55')
+                        }
+                        onMouseLeave={(e) =>
+                            (e.currentTarget.style.color = '#C7AB65')
+                        }
                     >
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Voltar para minhas listas
@@ -54,12 +58,15 @@ export default function Create() {
                                 className="w-full rounded-lg border border-gray-300 px-4 py-3"
                                 style={{ borderColor: '#d1d5db' }}
                                 onFocus={(e) => {
-                                    e.currentTarget.style.borderColor = '#C7AB65';
-                                    e.currentTarget.style.outline = '2px solid #C7AB65';
+                                    e.currentTarget.style.borderColor =
+                                        '#C7AB65';
+                                    e.currentTarget.style.outline =
+                                        '2px solid #C7AB65';
                                     e.currentTarget.style.outlineOffset = '2px';
                                 }}
                                 onBlur={(e) => {
-                                    e.currentTarget.style.borderColor = '#d1d5db';
+                                    e.currentTarget.style.borderColor =
+                                        '#d1d5db';
                                     e.currentTarget.style.outline = 'none';
                                 }}
                                 required
@@ -77,12 +84,20 @@ export default function Create() {
                                 type="submit"
                                 disabled={processing}
                                 className="flex flex-1 items-center justify-center gap-2 rounded-lg px-6 py-3 font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-                                style={{ backgroundColor: processing ? '#9CA3AF' : '#C7AB65' }}
+                                style={{
+                                    backgroundColor: processing
+                                        ? '#9CA3AF'
+                                        : '#C7AB65',
+                                }}
                                 onMouseEnter={(e) => {
-                                    if (!processing) e.currentTarget.style.backgroundColor = '#B89B55';
+                                    if (!processing)
+                                        e.currentTarget.style.backgroundColor =
+                                            '#B89B55';
                                 }}
                                 onMouseLeave={(e) => {
-                                    if (!processing) e.currentTarget.style.backgroundColor = '#C7AB65';
+                                    if (!processing)
+                                        e.currentTarget.style.backgroundColor =
+                                            '#C7AB65';
                                 }}
                             >
                                 <Save className="h-5 w-5" />
@@ -97,7 +112,13 @@ export default function Create() {
                         </div>
 
                         {/* Info */}
-                        <div className="rounded-lg border p-4" style={{ borderColor: '#E5DFD0', backgroundColor: '#F5F0E8' }}>
+                        <div
+                            className="rounded-lg border p-4"
+                            style={{
+                                borderColor: '#E5DFD0',
+                                backgroundColor: '#F5F0E8',
+                            }}
+                        >
                             <p className="text-sm" style={{ color: '#8B7A45' }}>
                                 💡 <strong>Dica:</strong> Após criar a lista,
                                 você poderá adicionar as músicas e compartilhar

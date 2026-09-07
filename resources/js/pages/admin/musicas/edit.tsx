@@ -77,7 +77,11 @@ export default function MusicasEdit({ musica, temas }: Props) {
                 <Card className="max-w-5xl">
                     <CardHeader>
                         <div className="flex items-center gap-4">
-                            <Button variant="outline" size="sm" onClick={() => window.history.back()}>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => window.history.back()}
+                            >
                                 <ArrowLeft className="h-4 w-4" />
                             </Button>
                             <CardTitle>Editar Informações da Música</CardTitle>

@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Musica;
-use App\Models\Tema;
-use Illuminate\Http\Request;
+use App\Models\{Musica, Tema};
 use Inertia\Inertia;
 
 class MusicaController extends Controller
@@ -29,14 +27,14 @@ class MusicaController extends Controller
 
         return Inertia::render('musicas/index', [
             'musicas' => $musicas,
-            'temas' => $temas,
+            'temas'   => $temas,
             'autores' => $autores,
         ]);
     }
 
     public function show(Musica $musica)
     {
-        $musica->load('temas');
+        $musica->load('temas', 'audioInfo');
 
         $audioUrl = file_exists(public_path("audio/{$musica->numero}.mp3"))
             ? "/audio/{$musica->numero}.mp3"
@@ -44,19 +42,21 @@ class MusicaController extends Controller
 
         // Se o usuário estiver logado, buscar suas listas com informação se já contém esta música
         $listas = null;
+
         if (auth()->check()) {
             $listas = auth()->user()->listas()
                 ->select('id', 'nome')
                 ->get()
                 ->map(function ($lista) use ($musica) {
                     $lista->tem_musica = $lista->musicas()->where('musica_id', $musica->id)->exists();
+
                     return $lista;
                 });
         }
 
         return Inertia::render('musicas/show', [
-            'musica' => $musica,
-            'listas' => $listas,
+            'musica'   => $musica,
+            'listas'   => $listas,
             'audioUrl' => $audioUrl,
         ]);
     }
@@ -70,7 +70,7 @@ class MusicaController extends Controller
             ->paginate(50);
 
         return Inertia::render('musicas/PorTema', [
-            'tema' => $tema,
+            'tema'    => $tema,
             'musicas' => $musicas,
         ]);
     }

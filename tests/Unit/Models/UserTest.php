@@ -1,11 +1,10 @@
 <?php
 
-use App\Models\Lista;
-use App\Models\User;
+use App\Models\{Lista, User};
 
 it('identifica corretamente um admin', function () {
     $admin = User::factory()->create(['is_admin' => true]);
-    $user = User::factory()->create(['is_admin' => false]);
+    $user  = User::factory()->create(['is_admin' => false]);
 
     expect($admin->isAdmin())->toBeTrue()
         ->and($user->isAdmin())->toBeFalse();
@@ -19,7 +18,7 @@ it('tem relacionamento com listas', function () {
 });
 
 it('esconde campos sensíveis na serialização', function () {
-    $user = User::factory()->create();
+    $user  = User::factory()->create();
     $array = $user->toArray();
 
     expect($array)->not->toHaveKey('password')

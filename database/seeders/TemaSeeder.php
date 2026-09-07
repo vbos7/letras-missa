@@ -39,10 +39,10 @@ class TemaSeeder extends Seeder
 
         foreach ($temas as $tema) {
             DB::table('temas')->insert([
-                'nome' => $tema['nome'],
-                'slug' => Str::slug($tema['nome']),
-                'cor' => $tema['cor'],
-                'ordem' => $tema['ordem'],
+                'nome'       => $tema['nome'],
+                'slug'       => Str::slug($tema['nome']),
+                'cor'        => $tema['cor'],
+                'ordem'      => $tema['ordem'],
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

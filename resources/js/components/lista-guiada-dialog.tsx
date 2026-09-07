@@ -1,9 +1,15 @@
+import { AudioPlayerBar } from '@/components/audio-player-bar';
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import {
+    creditosDeMusica,
+    useAudioPlayer,
+    type AudioInfoRaw,
+} from '@/hooks/use-audio-player';
 import { normalizarBusca } from '@/lib/utils';
 import { router } from '@inertiajs/react';
 import {
@@ -16,11 +22,8 @@ import {
     Search,
     SkipForward,
     Sparkles,
-    Volume2,
-    VolumeX,
-    X,
 } from 'lucide-react';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 const MOMENTOS_MISSA: { label: string; temaNome: string }[] = [
     { label: 'Entrada', temaNome: 'Entrada' },
@@ -39,18 +42,12 @@ const TOTAL_PASSOS = MOMENTOS_MISSA.length + 1;
 
 const normalizar = normalizarBusca;
 
-function formatarTempo(s: number) {
-    if (!isFinite(s) || s < 0) return '0:00';
-    const m = Math.floor(s / 60);
-    const sec = Math.floor(s % 60);
-    return `${m}:${sec.toString().padStart(2, '0')}`;
-}
-
 interface Musica {
     id: number;
     numero: number;
     titulo: string;
     autor?: string;
+    audio_info?: AudioInfoRaw | null;
 }
 
 interface Tema {
@@ -76,13 +73,16 @@ export function ListaGuiadaDialog({ aberto, onFechar, temas }: Props) {
     const [busca, setBusca] = useState('');
     const [enviando, setEnviando] = useState(false);
 
-    // Player de áudio
-    const audioRef = useRef<HTMLAudioElement>(null);
-    const [audioMusica, setAudioMusica] = useState<Musica | null>(null);
-    const [tocando, setTocando] = useState(false);
-    const [tempoAtual, setTempoAtual] = useState(0);
-    const [duracao, setDuracao] = useState(0);
-    const [volume, setVolume] = useState(1);
+    // Player de áudio (componente compartilhado)
+    const player = useAudioPlayer();
+
+    const faixaDe = (musica: Musica) => ({
+        id: musica.id,
+        numero: musica.numero,
+        titulo: musica.titulo,
+        src: `/audio/${musica.numero}.mp3`,
+        info: creditosDeMusica(musica),
+    });
 
     const momentoAtual = passo > 0 ? MOMENTOS_MISSA[passo - 1] : null;
 
@@ -113,48 +113,9 @@ export function ListaGuiadaDialog({ aberto, onFechar, temas }: Props) {
         }));
     };
 
-    // --- Player ---
-    const playMusica = (musica: Musica) => {
-        if (!audioRef.current) return;
-
-        if (audioMusica?.id === musica.id) {
-            // Mesma música: toggle
-            if (tocando) {
-                audioRef.current.pause();
-            } else {
-                audioRef.current.play();
-            }
-        } else {
-            // Nova música
-            setAudioMusica(musica);
-            setTempoAtual(0);
-            setDuracao(0);
-            audioRef.current.src = `/audio/${musica.numero}.mp3`;
-            audioRef.current.play().catch(() => {
-                setAudioMusica(null);
-            });
-        }
-    };
-
-    const fecharPlayer = () => {
-        if (audioRef.current) {
-            audioRef.current.pause();
-            audioRef.current.src = '';
-        }
-        setAudioMusica(null);
-        setTocando(false);
-        setTempoAtual(0);
-        setDuracao(0);
-    };
-
-    const handleVolume = (v: number) => {
-        setVolume(v);
-        if (audioRef.current) audioRef.current.volume = v;
-    };
-
     // --- Navegação entre passos ---
     const trocarPasso = (delta: number) => {
-        fecharPlayer();
+        player.fechar();
         setBusca('');
         setPasso((p) => p + delta);
     };
@@ -182,7 +143,7 @@ export function ListaGuiadaDialog({ aberto, onFechar, temas }: Props) {
 
     const fechar = () => {
         if (enviando) return;
-        fecharPlayer();
+        player.fechar();
         setPasso(0);
         setNome('');
         setSelecoes(
@@ -333,9 +294,11 @@ export function ListaGuiadaDialog({ aberto, onFechar, temas }: Props) {
                                                 const selecionada =
                                                     selecoes[passo - 1] ===
                                                     musica.id;
+                                                const faixa = faixaDe(musica);
+                                                const noPlayer =
+                                                    player.eAtual(faixa);
                                                 const estaToando =
-                                                    audioMusica?.id ===
-                                                        musica.id && tocando;
+                                                    noPlayer && player.tocando;
 
                                                 return (
                                                     <div
@@ -400,8 +363,8 @@ export function ListaGuiadaDialog({ aberto, onFechar, temas }: Props) {
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                playMusica(
-                                                                    musica,
+                                                                player.tocar(
+                                                                    faixa,
                                                                 );
                                                             }}
                                                             title={
@@ -410,14 +373,12 @@ export function ListaGuiadaDialog({ aberto, onFechar, temas }: Props) {
                                                                     : 'Ouvir prévia'
                                                             }
                                                             className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full transition-all ${
-                                                                audioMusica?.id ===
-                                                                musica.id
+                                                                noPlayer
                                                                     ? 'text-white'
                                                                     : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                                                             }`}
                                                             style={
-                                                                audioMusica?.id ===
-                                                                musica.id
+                                                                noPlayer
                                                                     ? {
                                                                           backgroundColor:
                                                                               '#C7AB65',
@@ -455,106 +416,8 @@ export function ListaGuiadaDialog({ aberto, onFechar, temas }: Props) {
 
                 {/* Área inferior: player + footer — nunca rola, sempre ancorada no fundo */}
                 <div className="flex-shrink-0">
-                    {/* Mini player */}
-                    <div
-                        className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                            audioMusica ? 'max-h-28 border-t' : 'max-h-0'
-                        }`}
-                        style={{ backgroundColor: '#FDFAF4' }}
-                    >
-                        <div className="px-5 py-2.5">
-                            {/* Info da música */}
-                            <p className="mb-2 truncate text-sm font-medium text-gray-800">
-                                {audioMusica?.numero && (
-                                    <span
-                                        className="mr-1.5 font-bold"
-                                        style={{ color: '#C7AB65' }}
-                                    >
-                                        {audioMusica.numero}
-                                    </span>
-                                )}
-                                {audioMusica?.titulo}
-                            </p>
-
-                            {/* Controles */}
-                            <div className="flex items-center gap-2.5">
-                                {/* Play / Pause */}
-                                <button
-                                    onClick={() =>
-                                        audioMusica && playMusica(audioMusica)
-                                    }
-                                    className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-white transition-opacity hover:opacity-80"
-                                    style={{ backgroundColor: '#C7AB65' }}
-                                >
-                                    {tocando ? (
-                                        <Pause className="h-3.5 w-3.5" />
-                                    ) : (
-                                        <Play className="ml-0.5 h-3.5 w-3.5" />
-                                    )}
-                                </button>
-
-                                {/* Tempo atual */}
-                                <span className="w-8 flex-shrink-0 text-right text-xs text-gray-500 tabular-nums">
-                                    {formatarTempo(tempoAtual)}
-                                </span>
-
-                                {/* Scrubber */}
-                                <input
-                                    type="range"
-                                    min={0}
-                                    max={duracao || 100}
-                                    value={tempoAtual}
-                                    onChange={(e) => {
-                                        const t = Number(e.target.value);
-                                        setTempoAtual(t);
-                                        if (audioRef.current)
-                                            audioRef.current.currentTime = t;
-                                    }}
-                                    className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-gray-200"
-                                    style={{ accentColor: '#C7AB65' }}
-                                />
-
-                                {/* Duração */}
-                                <span className="w-8 flex-shrink-0 text-xs text-gray-500 tabular-nums">
-                                    {formatarTempo(duracao)}
-                                </span>
-
-                                {/* Volume */}
-                                <button
-                                    onClick={() =>
-                                        handleVolume(volume > 0 ? 0 : 1)
-                                    }
-                                    className="flex-shrink-0 text-gray-400 transition-colors hover:text-gray-600"
-                                >
-                                    {volume === 0 ? (
-                                        <VolumeX className="h-4 w-4" />
-                                    ) : (
-                                        <Volume2 className="h-4 w-4" />
-                                    )}
-                                </button>
-                                <input
-                                    type="range"
-                                    min={0}
-                                    max={1}
-                                    step={0.05}
-                                    value={volume}
-                                    onChange={(e) =>
-                                        handleVolume(Number(e.target.value))
-                                    }
-                                    className="h-1.5 w-16 cursor-pointer appearance-none rounded-full bg-gray-200"
-                                    style={{ accentColor: '#C7AB65' }}
-                                />
-
-                                {/* Fechar player */}
-                                <button
-                                    onClick={fecharPlayer}
-                                    className="flex-shrink-0 text-gray-400 transition-colors hover:text-gray-600"
-                                >
-                                    <X className="h-4 w-4" />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    {/* Mini player (componente compartilhado) */}
+                    <AudioPlayerBar player={player} variant="inline" />
 
                     {/* Rodapé */}
                     <div className="flex items-center justify-between border-t px-6 py-4">
@@ -618,23 +481,6 @@ export function ListaGuiadaDialog({ aberto, onFechar, temas }: Props) {
                     </div>
                 </div>
                 {/* fim da área inferior */}
-
-                {/* Elemento de áudio (oculto) */}
-                <audio
-                    ref={audioRef}
-                    onTimeUpdate={() =>
-                        setTempoAtual(audioRef.current?.currentTime ?? 0)
-                    }
-                    onLoadedMetadata={() =>
-                        setDuracao(audioRef.current?.duration ?? 0)
-                    }
-                    onPlay={() => setTocando(true)}
-                    onPause={() => setTocando(false)}
-                    onEnded={() => {
-                        setTocando(false);
-                        setTempoAtual(0);
-                    }}
-                />
             </DialogContent>
         </Dialog>
     );
